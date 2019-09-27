@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>mugwump</RootNamespace>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <StartupObject>Sub Main</StartupObject>
+    <ApplicationManifest>My Project\app.manifest</ApplicationManifest>
+  </PropertyGroup>
+
+</Project>
