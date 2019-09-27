@@ -7,4 +7,4 @@ Right now the following programs are available.
 
 If you have suggestions for other programs let me know.
 
-This is not in any way affiliated with Rosetta Code http://rosettacode.org/wiki/Rosetta_Code, but I am fond of their work and the idea is similar.
+This is not in any way affiliated with Rosetta Code http://rosettacode.org/wiki/Rosetta_Code, but I am fond of their work and the idea is the same.
