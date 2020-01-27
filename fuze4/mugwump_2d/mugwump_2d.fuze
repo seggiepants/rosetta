@@ -1,0 +1,341 @@
+// MUGWUMP 2D
+// a graphical version of MUGWUMP from BASIC COMPUTER GAMES
+// by Bob Albrecht, Bud Valenti. Edited by David H. Ahl
+// ported by SeggiePants
+
+GAME_TITLE = "MUGWUMP 2D"
+text_size = INT(GHeight() / 25) // I want something like an 80x25 character text screen.
+TextSize(text_size)     // Set the text text_size
+SAMPLE_CHAR = "M"       // M is a fat character used to get the width of a generic character
+BORDER_W = TextWidth(SAMPLE_CHAR) * 2   // Leave space for a chracter padding on the left and right.
+BORDER_H = text_size * 2                // Leave space for two characters padding on the top and bottom.
+GRID_W = 10         // Traditional MUGWUMP is on a 10x10 grid, change this and GRID_H if you want it bigger/smaller.
+GRID_H = GRID_W     // Square grid.
+COUNT_MUGWUMPS = 4  // Traditional MUGWUMP has four mugwumps to find but you can edit it here.
+FPS = (1.0 / 20.0)  // 20 Frames Per Second
+IDX_CONTROLLER = 0  // Look at the first IDX_CONTROLLER
+MAX_GUESSES = 10    // Traditional MUGWUMP allows 10 guesses, you can change that here.
+
+VECTOR mugwump_colors[COUNT_MUGWUMPS]
+mugwump_colors[0] = PINK
+mugwump_colors[1] = VIOLET
+mugwump_colors[2] = LIGHTBLUE
+mugwump_colors[3] = ORANGE
+
+// Redundant Color structure.
+struct rgba_color
+    float r
+    float g
+    float b
+    float a
+endstruct
+
+// Redundant 2D point structure.
+struct point2
+    int x   // Screen/Grid x coordinate
+    int y   // Screen/Grid y coordinate
+endstruct
+
+// Structure to hold information about the mugwump grid
+struct grid_info
+    int width                       // How many cells wide
+    int height                      // How many cells tall
+    int cell_width                  // Width of a cell.
+    int cell_height                 // Height of a cell.
+    int x                           // X offset on screen to draw the grid.
+    int y                           // Y offset on screen to draw the grid.
+    int guess_count                 // How many guesses have we used.
+    point2D guesses[MAX_GUESSES]    // Positions we have guessed.
+endstruct
+
+// Structure to hold information about a specific mugwump
+struct mugwump_info
+    int x                   // x-coordinate on the grid
+    int y                   // y-coordinate on the grid
+    int found               // 0 = not found, 1 = found
+    rgba_color color        // Color of the body
+    rgba_color eye_color    // Color of the white of the eye
+    rgba_color pupil_color  // Color of the pupil
+    rgba_color mouth_color  // Color of the mouth
+endstruct
+
+grid_info grid
+grid = InitGrid()
+point2d pos
+mugwump_info mugwumps[COUNT_MUGWUMPS]
+
+exit_game = FALSE
+
+WHILE !exit_game LOOP
+    InitMugwumps(grid, mugwumps)
+    grid.guess_count = 0
+    pos.x = int((grid.width - 1) / 2)
+    pos.y = int((grid.height - 1) / 2)
+    game_over = FALSE
+    exit_game = FALSE
+    
+    Sleep(FPS * 2)  // Give a second to let go of the buttons on the joycon
+
+    WHILE !game_over LOOP
+        c = controls(IDX_CONTROLLER)
+        IF c.up OR c.ly > 0.5 THEN
+            // Invert due to inverted y display
+            pos.y = MIN(grid.height - 1, pos.y + 1)
+        ENDIF
+
+        IF c.down OR c.ly < -0.5 THEN
+            // Inverted due to inverted y display
+            pos.y = MAX(0, pos.y - 1)
+        ENDIF
+        IF c.left or c.lx < -0.5 THEN
+            pos.x = MAX(0, pos.x - 1)
+        ENDIF
+
+        IF c.right or c.lx > 0.5 THEN
+            pos.x = MIN(grid.width - 1, pos.x + 1)
+        ENDIF
+
+        IF c.x OR grid.guess_count >= MAX_GUESSES THEN
+            game_over = TRUE
+            IF c.x THEN
+                exit_game = TRUE
+            ENDIF
+        ELSE
+            IF c.b THEN
+                IF IsGuessOK(pos.x, pos.y, grid) THEN
+                    grid.guesses[grid.guess_count].x = pos.X
+                    grid.guesses[grid.guess_count].y = pos.y
+                    grid.guess_count = grid.guess_count + 1
+                    FOR i = 0 TO LEN(mugwumps) LOOP
+                        IF mugwumps[i].x == pos.x AND mugwumps[i].y == pos.y THEN
+                            mugwumps[i].found = TRUE
+                        ENDIF
+                    REPEAT
+                ENDIF
+            ENDIF
+        ENDIF
+        Clear(BLACK)
+        DrawConsole(grid, mugwumps, text_size)
+        DrawGrid(grid, pos, text_size)
+        mugwumps_found = 0
+        FOR i = 0 TO LEN(mugwumps) LOOP
+            IF mugwumps[i].found == TRUE THEN
+                DrawMugwump(grid.x + grid.cell_width * mugwumps[i].x, grid.y + grid.cell_height * (grid.height - mugwumps[i].y - 1), MIN(grid.cell_width, grid.cell_height), mugwumps[i].color, mugwumps[i].eye_color, mugwumps[i].pupil_color, mugwumps[i].mouth_color)
+                mugwump_found = mugwumps-found + 1
+            ENDIF
+        REPEAT
+        IF mugwumps_found >= COUNT_MUGWUMPS THEN
+            game_over = TRUE
+        ENDIF
+        Update()
+        sleep(FPS)
+    REPEAT
+    IF exit_game == FALSE THEN
+        exit_game = !PlayAgain(grid, mugwumps, text_size)
+    ENDIF
+REPEAT
+FUNCTION DrawConsole(grid, mugwumps, text_size)
+    // Draw the game title
+    PrintAt(1, 1)
+    Print(GAME_TITLE)
+
+    IF grid.guess_count >= 1 THEN
+        FOR i = 0 TO LEN(mugwumps) LOOP
+            PrintAt(1, 3 + i)
+            Print("#" + str(i + 1))
+            DrawMugwump(TextWidth(" #" + str(i + 1) + " "), (i + 3) * text_size, text_size, mugwumps[i].color, mugwumps[i].eye_color, mugwumps[i].pupil_color, mugwumps[i].mouth_color)
+            IF mugwumps[i].found == 1 THEN
+                PrintAt(LEN(" #" + str(i + 1) + " ") + 3, (i + 3))
+                Print("FOUND!")
+            ELSE
+                dx = mugwumps[i].x - grid.guesses[grid.guess_count - 1].x
+                dy = mugwumps[i].y - grid.guesses[grid.guess_count - 1].y
+                dist = sqrt(dx * dx + dy * dy)
+                dist = round(dist * 100) / 100
+                num_chars = strFind(dist_str, ".") + 2
+                dist_str = dist_sr[0:num_chars]
+                PrintAt(LEN(" #" + str(i + 1) + " ") + 3, (i + 3))
+                Print("is " + dist_str) + " units away")
+            ENDIF
+        REPEAT
+        PrintAt(1, 5 + LEN(mugwumps))
+        Print("You have " + str(MAX_GUESSES - grid.guess_count) + "/" + str(MAX_GUESSES) + " guesses remaining")
+    ELSE
+        PrintAt(1, 3)
+        Print("Find all the mugwumps to win!")
+        PrintAt(1, 4)
+        Print("Select a square to scan for Mugwumps")
+        PrintAt(1, 5)
+        Print("Left joystick or d-pad to move")
+        PrintAt(1, 6)
+        Print("Select with the B button")
+        PrintAt(1, 7)
+        Print("X button will quit the game")
+        PrintAt(1, 9)
+        Print("You have " + str(MAX_GUESSES - grid.guess_count) + "/" + str(MAX_GUESSES) + " guesses remaining")
+    ENDIF
+RETURN VOID
+
+FUNCTION DrawGrid(grid, pos, text_height)
+    text_width = TextWidth(SAMPLE_CHAR)
+    FOR j = 0 TO grid.height + 1 LOOP
+        line({grid.x, grid.y + (j * grid.cell_height)}, {grid.x + (grid.width * grid.cell_width), grid.y + (j * grid.cell_height}, WHITE)        
+    REPEAT
+
+    tx = grid.x - text_width - int(text_width / 2)
+    ty = grid.y + (grid.height * grid.cell_height) - ((grid.cell_height + text_height) / 2)
+    FOR j = 0 to grid.height LOOP
+        drawText(tx, ty - (j * grid.cell_height), text_height, WHITE, STR(j))
+    REPEAT
+
+    FOR 0 = 0 TO grid.width + 1 LOOP
+        line({grid.x + (i * grid.cell_width), grid.y}, {grid.x + (i * grid.cell_width), grid.y + (grid.height * grid.cell_height}, WHITE)
+    REPEAT
+
+    tx = grid.x + ((grid.cell_width - text_width) / 2)
+    ty = grid.y + (grid.height * grid.cell_height) + int(text_height / 4)
+    FOR i = 0 to grid.width LOOP
+        drawText(tx + (i * grid.cell_width), ty, text_height, WHITE, STR(j))
+    REPEAT
+
+    FOR i = 0 to grid.guess_count LOOP
+        box(grid.x + 1 + (grid.cell_width * grid.guesses[i].x), grid.y + 1 + (grid.cell_height * (grid.height - grid.guesses[i].y - 1)), grid.cell_width - 2, grid.cell_height - 2, RED, FALSE)
+    REPEAT
+    box(grid.x + 3 + (grid.cell_width * pos.x), grid.y + 3 + (grid.cell_height * (grid.height - pos.y - 1)), grid.cell_width - 6, grid.cell_height - 6, TEAL, FALSE)
+RETURN VOID
+
+FUNCTION DrawMugwump(x, y, size, color, eye_color, pupil_color, mouth_color)
+    center_x = x + (size / 2)
+    center_y = y + (size / 2)
+    eye_dx = size / 4
+    eye_dy = size / 4
+    num_points = MAX(4, MIN(360, size / 4))
+    circle(center_x, center_y, size / 2, num_points, color, FALSE)
+    circle(center_x - eye_dx, center_y - eye_dy, size / 5, num_points / 2, eye_color, FALSE)
+    circle(center_x + eye_dx, center_y - eye_dy, size / 5, num_points / 2, eye_color, FALSE)
+    circle(center_x - eye_dx, center_y - eye_dy, size / 10, num_points / 2, pupil_color, FALSE)
+    circle(center_x + eye_dx, center_y - eye_dy, size / 10, num_points / 2, pupil_color, FALSE)
+    circle(center_x, center_y + eye_dy / 2, size / 6, num_points / 2, mouth_color, FALSE)
+RETURN VOID
+
+FUNCTION InitGrid()
+    grid_info grid
+    grid.width = GRID_W
+    grid.height = GRID_H
+
+    grid.cell_width = (GWIDTH() - (BORDER_W * 2)) / grid.width
+    grid.cell_height = (GWIDTH() - (BORDER_W * 2)) / grid.height
+    grid.cell_width = MIN(grid.cell_width, grid.cell_height)
+    grid.cell_height = grid.cell_width
+    grid.x = INT(GWIDTH() - (grid.cell_width * grid.width)) - grid.cell_width
+    grid.y = INT((GHEIGHT() - (grid.cell_height * grid.height)) / 2)
+
+    grid.guess_count = 0
+
+RETURN grid
+
+FUNCTION InitMugwumps(grid, mugwumps)
+    FOR i = 0 TO LEN(mugwumps) LOOP
+        mugwumps[i].found = 0
+        x = 0
+        y = 0
+        LOOP
+            x = RND(grid.width)
+            y = RND(grid.height)
+            position_ok = TRUE
+            IF i > 0 THEN
+                FOR j = 0 TO i - 1 LOOP
+                    IF mugwumps[i].x == x AND mugwumps[i].y == y THEN
+                        position_ok = FALSE
+                        BREAK
+                    ENDIF
+                REPEAT
+            ENDIF
+            IF position_ok = TRUE THEN
+                BREAK
+            ENDIF
+        REPEAT // UNTIL position_ok = TRUE
+        mugwumps[i].x = x
+        mugwumps[i].y = y
+        mugwumps[i].color = mugwump_colors[i % LEN(mugwump_colors)]
+        mugwumps[i].eye_color = WHITE
+        mugwumps[i].pupil_color = BLACK
+        mugwumps[i].mouth_color = BLACK
+    REPEAT
+RETURN VOID
+
+FUNCTION IsGuessOK(x, y, grid)
+    ret = TRUE
+    FOR i = 0 TO grid.guess_count LOOP
+        IF grid.guesses[i].x == x and grid.guesses[i].y == y THEN
+            ret = FALSE
+            BREAK
+        ENDIF
+    REPEAT
+RETURN ret
+FUNCTION PlayAgain(grid, mugwumps, text_size)
+    mugwumps_found = 0
+    string message[4]
+    FOR i = 0 TO LEN(mugwumps) LOOP
+        IF mugwumps[i].found THEN
+            mugwumps_found = mugwumps_found + 1
+        ENDIF
+    REPEAT
+    IF mugwumps_found == COUNT_MUGWUMPS THEN
+        message[0] = "Congratulations! You Won!"
+    ELSE
+        message[0] = "Sorry, you lost."
+    ENDIF
+    
+    message[1] = "Would you like to play again?"
+    message[2] = " [A] = No"
+    message[3] = " [B] = Yes"
+
+    max_width = LEN(message[0])
+    FOR i = 1 TO LEN(message) LOOP
+        IF LEN(message[i]) > max_width THEN
+            max_width = LEN(message[i])
+        ENDIF
+    REPEAT
+    
+    w = max_width + 4
+    h = LEN(message) + 4
+    x = (TWIDTH() - w) / 2
+    y = (THEIGHT() - h) / 2
+
+    Box(x * TextWidth(SAMPLE_CHAR), (y - 1) * text_size, w * TextWidth(SAMPLE_CHAR), h * text_size, DarkGrey, FALSE)
+    Box(x * TextWidth(SAMPLE_CHAR) + 8, (y - 1) * text_size + 8, w * TextWidth(SAMPLE_CHAR) - 16, h * text_size - 16, LightGrey, FALSE)
+    Ink(Black)
+
+    x = x + 2
+    y = y + 1
+
+    FOR i = 0 TO LEN(message) LOOP
+        PrintAt(x, y)
+        PRINT(message[i])
+        y = y + 1
+    REPEAT
+
+    Ink(White)
+
+    value_selected = FALSE
+    result = FALSE
+    Update()
+    Sleep(FPS * 2) // Give the user a second to let go of the button
+
+    WHILE !value_selected LOOP
+        c = controls(IDX_CONTROLLER)
+
+        IF c.b THEN
+            result = TRUE
+            value_selected = TRUE
+        ELSE
+            IF c.a THEN
+                result = FALSE
+                value_selected = TRUE
+            ENDIF
+        ENDIF
+        Update()
+        sleep(FPS)
+    REPEAT
+RETURN result
