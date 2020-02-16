@@ -188,7 +188,7 @@ FUNCTION DrawGrid(grid, pos, text_height)
         drawText(tx, ty - (j * grid.cell_height), text_height, WHITE, STR(j))
     REPEAT
 
-    FOR 0 = 0 TO grid.width + 1 LOOP
+    FOR i = 0 TO grid.width + 1 LOOP
         line({grid.x + (i * grid.cell_width), grid.y}, {grid.x + (i * grid.cell_width), grid.y + (grid.height * grid.cell_height}, WHITE)
     REPEAT
 

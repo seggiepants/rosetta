@@ -1,0 +1,11 @@
+Debug
+x64
+.vs
+obj
+bin
+.metadata
+*.class
+.settings
+.classpath
+.project
+/vb_net/mugwump/mugwump/My Project
