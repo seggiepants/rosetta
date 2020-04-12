@@ -7,19 +7,8 @@ from pygame.locals import *
 # by Bob Albrecht, Bud Valenti, Edited by David H. Ahl
 # ported by SeggiePants
 
-
 FPS = 30 # Frames per second
 
-# Screen Size
-SCREEN_W = 720
-SCREEN_H = 480
-
-
-CONST #CONTROLLER_ID = 0
-CONST #STICK_LEFT = 0
-CONST #BUTTON_PRESSED = 0
-CONST #BUTTON_RELEASED = 3
- 
 GAME_TITLE = 'MUGWUMP 2D'
 TEXT_SIZE = 16
 BORDER_W = TEXT_SIZE * 2
@@ -29,25 +18,104 @@ COUNT_MUGWUMPS = 4
 MAX_GUESSES =10
 GRID_W = 10
 GRID_H = GRID_W
-VAR CELL_W, CELL_H
-VAR GRID_X, GRID_Y
-VAR GUESS_COUNT
-VAR GUESS_X[MAX_GUESSES]
-VAR GUESS_Y[MAX_GUESSES]
 
-'SCREEN SIZE
-CONST #SCREEN_W = 720
-CONST #SCREEN_H = 400
+# SCREEN SIZE
+SCREEN_W = 720
+SCREEN_H = 400
 
-'COLORS
+# COLORS
+BLACK = (0, 0, 0)
 DARK_GRAY = (64, 64, 64)
 LIGHT_BLUE = (128, 128, 255)
 LIGHT_GRAY = (192, 192, 192)
 ORANGE = (255, 128, 0)
 PINK = (255, 0, 128)
+RED = (255, 0, 0)
+TEAL = (12, 140, 127)
 VIOLET = (192, 0, 255)
+WHITE = (255, 255, 255)
 
-BodyColors = [PINK, VIOLET, LIGHT_BLUE, ORANGE];
+bodyColors = [PINK, VIOLET, LIGHT_BLUE, ORANGE]
+
+class Grid:
+    def __init__(self, width = GRID_W, height = GRID_H, textSize = TEXT_SIZE, screenWidth = SCREEN_W, screenHeight = SCREEN_H, borderWidth = BORDER_W, borderHeight = BORDER_H):
+        self.width = width
+        self.height = height
+        self.textSize = textSize
+        self.mugwumps = []
+        font = pygame.font.SysFont(None, textSize)
+
+        # Save the digits on the side of the grid to pre-rendered surfaces.
+        self.digits = []
+        for i in range(max(self.width, self.height)):
+            self.digits.append(font.render(str(i), False, WHITE, None))
+
+        self.cellW = (screenWidth - (borderWidth * 2)) / self.width
+        self.cellH = (screenHeight - (borderHeight * 2)) / self.height
+        self.cellW = min(self.cellW, self.cellH)
+        self.cellH = self.cellW
+
+        self.x = screenWidth - (self.cellW * self.width) - borderWidth
+        self.y = math.floor((screenHeight - (self.cellH * self.height)) / 2)
+
+        self.guesses = []
+        self.pos = {'x': 0, 'y': 0}
+    
+    def newGame(self, numMugwumps):
+        self.guesses = []
+        self.mugwumps = []
+        for i in range(numMugwumps):
+            positionOK = False
+            x = 0
+            y = 0
+            while not positionOK:
+                x = random.randrange(0, self.width)
+                y = random.randrange(0, self.height)
+                positionOK = True
+                # can I replace this with a list comprehension?
+                for j in range(len(self.mugwumps)):
+                    if (x == self.mugwumps[j].x and y == self.mugwumps[j].y):
+                        positionOK = False
+                        break
+                color = bodyColors[i % len(bodyColors)]
+                self.mugwumps.append(Mugwump(False, x, y, color, WHITE, BLACK, BLACK))
+    
+    def draw(self, surf):
+        # Horizontal lines
+        for j in range(self.height + 1):
+            pygame.draw.line(surf, WHITE, (self.x, self.y + (j * self.cellH)), (self.x + (self.width * self.cellW), self.y + (j * self.cellH)))
+        
+        # Horizontal digits
+        for j in range(self.height):
+            r = self.digits[j].get_rect()   
+            r.midright = (self.x - self.textSize, self.y + ((self.height - j) * self.cellH) - math.floor(self.cellH / 2))
+            surf.blit(self.digits[j], r)
+        
+        # Vertical lines
+        for i in range(self.width + 1):
+            pygame.draw.line(surf, WHITE, (self.x + (i * self.cellW), self.y), (self.x + (i * self.cellW), self.y + (self.height * self.cellH)))
+        
+        # Vertical digits
+        for i in range(self.width):
+            r = self.digits[i].get_rect()
+            r.midtop = (self.x + math.floor(self.cellW / 2) + (i * self.cellW), self.y + (self.height * self.cellH) + math.floor(self.textSize / 2))
+            surf.blit(self.digits[i], r)
+        
+        for guess in self.guesses:
+            x = self.x + 1 + (self.cellW * guess['x'])
+            y = self.y + 1 + (self.cellH * guess['y'])
+            r = pygame.Rect(x, y, self.cellW - 2, self.cellH - 2)
+            pygame.draw.rect(surf, RED, r, 0)
+        
+        if (self.pos['x'] >= 0 and self.pos['x'] < self.width and self.pos['y'] >= 0 and self.pos['y'] < self.height):
+            x = self.x + 3 + (self.cellW * self.pos['x'])
+            y = self.y + 3 + (self.cellH * self.pos['y'])
+            r = pygame.Rect(x, y, self.cellW - 6, self.cellH - 6)
+            pygame.draw.rect(surf, TEAL, r, 0)
+
+        for mugwump in self.mugwumps:
+            if mugwump.found:
+                mugwump.draw(surf, self.x + (self.cellW * mugwump.x) + 1, self.y + (self.cellH) + 1, self.cellW - 2)
 
 class Mugwump:
     def __init__(self, found, x, y, color, eyeColor, pupilColor, mouthColor):
@@ -66,30 +134,14 @@ class Mugwump:
         eyeDx = math.floor(size /4)
         eyeDy = math.floor(size / 4)
 
-        pygame.draw.circle(surf, color, (centerX, centerY), math.floor(size / 2))
-        pygame.draw.circle(surf, eyeColor(centerX - eyeDx, centerY - eyeDy), math.floor(size / 5), eyeColor)
-        pygame.draw.circle(surf, eyeColor(centerX + eyeDx, centerY - eyeDy), math.floor(size / 5), eyeColor)
-        pygame.draw.circle(surf, eyeColor(centerX - eyeDx, centerY - eyeDy), math.floor(size / 10), pupilColor)
-        pygame.draw.circle(surf, eyeColor(centerX + eyeDx, centerY - eyeDy), math.floor(size / 10), pupilColor)
+        pygame.draw.circle(surf, self.color, (centerX, centerY), math.floor(size / 2), 0)
+        pygame.draw.circle(surf, self.eyeColor, (centerX - eyeDx, centerY - eyeDy), math.floor(size / 5), 0)
+        pygame.draw.circle(surf, self.eyeColor, (centerX + eyeDx, centerY - eyeDy), math.floor(size / 5), 0)
+        pygame.draw.circle(surf, self.pupilColor, (centerX - eyeDx, centerY - eyeDy), math.floor(size / 10), 0)
+        pygame.draw.circle(surf, self.pupilColor, (centerX + eyeDx, centerY - eyeDy), math.floor(size / 10), 0)
 
 
-def InitMugwumps():
-    mugwumps = [];
-    for i in range(COUNT_MUGWUMPS):
-        positionOK = False
-        x = 0
-        y = 0
-        while !positionOK:
-            x = random.randrange(0, GRID_W)
-            y = random.randrange(0, GRID_H)
-            positionOK = True
-            for j in range(len(mugwumps)):
-                if (x == mugwumps[j].x && y = mugwumps[j].y):
-                    positionOK = False
-                    break
-        color = BodyColors[i % len(BodyColors)]
-        mugwumps.append(new Mugwump(False, x, y, color, WHITE, BLACK, BLACK)
-        
+'''        
 'MUGWUMP DATA
 VAR MUGWUMP_FOUND[COUNT_MUGWUMPS]
 VAR MUGWUMP_X[COUNT_MUGWUMPS]
@@ -376,3 +428,25 @@ DEF PLAY_AGAIN()
  WEND
  RETURN RET
 END
+'''
+
+pygame.init()
+screen = pygame.display.set_mode((SCREEN_W, SCREEN_H))
+running = True
+
+grid = Grid()
+
+while running:
+    event = pygame.event.poll()
+    if event.type == pygame.QUIT:
+        running = False
+    #elif event.type == pygame.MOUSEBUTTONDOWN and event.button == LEFT:
+    #    print("You pressed the left mouse button at (%d, %d)" % event.pos)
+    #elif event.type == pygame.MOUSEBUTTONUP and event.button == LEFT:
+    #    print("You released the left mouse button at (%d, %d)" % event.pos)
+
+    screen.fill((0, 0, 0))
+    grid.draw(screen)
+    pygame.display.flip()
+
+print('goodbye')
