@@ -10,8 +10,8 @@ from pygame.locals import *
 FPS = 30 # Frames per second
 
 GAME_TITLE = 'MUGWUMP 2D'
-TEXT_SIZE = 16
-BORDER_W = TEXT_SIZE * 2
+TEXT_SIZE = 18
+BORDER_W = TEXT_SIZE
 BORDER_H = BORDER_W
 
 COUNT_MUGWUMPS = 4
@@ -37,11 +37,85 @@ WHITE = (255, 255, 255)
 
 bodyColors = [PINK, VIOLET, LIGHT_BLUE, ORANGE]
 
+class Console:
+    def __init__(self, gameTitle, textSize, borderWidth, borderHeight):
+        self.borderWidth = borderWidth
+        self.borderHeight = borderHeight
+        self.gameTitle = gameTitle
+        self.textSize = textSize
+        self.font = pygame.font.SysFont(None, textSize)
+        self.fontLarge = pygame.font.SysFont(None, textSize + 2)
+        
+    def draw(self, surf, guesses, maxGuesses, mugwumps):
+        # Draw the title
+        y = math.floor(self.borderHeight / 2)
+        surfWidth, _ = surf.get_size()
+        x = math.floor(surfWidth / 2)
+        textSurf = self.fontLarge.render(self.gameTitle, False, WHITE, None)
+        r = textSurf.get_rect()
+        r.top = y
+        r.centerx = x
+        surf.blit(textSurf, r)
+
+        if len(guesses) > 0:
+            # Draw the console.
+            y = self.borderHeight
+            for i, mugwump in enumerate(mugwumps):
+                x = self.borderWidth
+                textSurf = self.font.render('#' + str(i) + ' ', False, WHITE, None)
+                r = textSurf.get_rect()
+                r.top = y
+                r.left = x
+                surf.blit(textSurf, r)
+                x += r.width
+
+                mugwump.draw(surf, x, y, self.textSize)
+                x += self.textSize
+
+                if (mugwump.found):
+                    message = ' FOUND!'
+                else:
+                    dx = guesses[-1]['x']
+                    dy = guesses[-1]['y']
+                    dist = math.sqrt(dx * dx + dy * dy)
+                    message = f' is {dist:.2f} units away'
+                textSurf = self.font.render(message, False, WHITE, None)
+                r = textSurf.get_rect()
+                r.top = y
+                r.left = x
+                surf.blit(textSurf, r)
+                y += r.height + self.borderHeight    
+        else:
+            # Draw the help text.
+            x = self.borderWidth
+            y = self.borderHeight * 3
+            messages = ["Find all the Mugwumps to win!", 
+            "Select a square to scan for a Mugwump",
+            "Use the arrow keys to move.",
+            "Space bar will select a square.",
+            "You can also use the mouse.",
+            "Press the Escape key to quite the game."]
+            for message in messages:
+                textSurf = self.font.render(message, False, WHITE, None)
+                r = textSurf.get_rect()
+                r.top = y
+                r.left = x
+                y = y + r.height + self.borderHeight
+                surf.blit(textSurf, r)
+
+        textSurf = self.font.render(f'You have {maxGuesses - len(guesses)} guesses remaining.', False, WHITE, None)
+        r = textSurf.get_rect()
+        r.top = y + (self.borderHeight * 3)
+        r.left = x
+        surf.blit(textSurf, r)
+
 class Grid:
-    def __init__(self, width = GRID_W, height = GRID_H, textSize = TEXT_SIZE, screenWidth = SCREEN_W, screenHeight = SCREEN_H, borderWidth = BORDER_W, borderHeight = BORDER_H):
+    def __init__(self, gameTitle = GAME_TITLE, width = GRID_W, height = GRID_H, maxGuesses = MAX_GUESSES, textSize = TEXT_SIZE, screenWidth = SCREEN_W, screenHeight = SCREEN_H, borderWidth = BORDER_W, borderHeight = BORDER_H):
         self.width = width
         self.height = height
         self.textSize = textSize
+        self.console = Console(gameTitle, self.textSize, borderWidth, borderHeight)
+        self.maxGuesses = maxGuesses
         self.mugwumps = []
         font = pygame.font.SysFont(None, textSize)
 
@@ -51,7 +125,7 @@ class Grid:
             self.digits.append(font.render(str(i), False, WHITE, None))
 
         self.cellW = (screenWidth - (borderWidth * 2)) / self.width
-        self.cellH = (screenHeight - (borderHeight * 2)) / self.height
+        self.cellH = (screenHeight - (borderHeight * 3) - self.textSize) / self.height
         self.cellW = min(self.cellW, self.cellH)
         self.cellH = self.cellW
 
@@ -60,6 +134,18 @@ class Grid:
 
         self.guesses = []
         self.pos = {'x': 0, 'y': 0}
+
+    def moveLeft(self):
+        self.pos['x'] = max(0, self.pos['x'] - 1)
+
+    def moveRight(self):
+        self.pos['x'] = min(self.width - 1, self.pos['x'] + 1)
+    
+    def moveUp(self):
+        self.pos['y'] = max(0, self.pos['y'] - 1)
+
+    def moveDown(self):
+        self.pos['y'] = min(self.height - 1, self.pos['y'] + 1)
     
     def newGame(self, numMugwumps):
         self.guesses = []
@@ -81,6 +167,7 @@ class Grid:
                 self.mugwumps.append(Mugwump(False, x, y, color, WHITE, BLACK, BLACK))
     
     def draw(self, surf):
+        self.console.draw(surf, self.guesses, self.maxGuesses, self.mugwumps)
         # Horizontal lines
         for j in range(self.height + 1):
             pygame.draw.line(surf, WHITE, (self.x, self.y + (j * self.cellH)), (self.x + (self.width * self.cellW), self.y + (j * self.cellH)))
@@ -142,15 +229,6 @@ class Mugwump:
 
 
 '''        
-'MUGWUMP DATA
-VAR MUGWUMP_FOUND[COUNT_MUGWUMPS]
-VAR MUGWUMP_X[COUNT_MUGWUMPS]
-VAR MUGWUMP_Y[COUNT_MUGWUMPS]
-VAR MUGWUMP_COLOR[COUNT_MUGWUMPS]
-VAR MUGWUMP_EYE_COLOR[COUNT_MUGWUMPS]
-VAR MUGWUMP_PUPIL_COLOR[COUNT_MUGWUMPS]
-VAR MUGWUMP_MOUTH_COLOR[COUNT_MUGWUMPS]
-
 VAR EXIT_GAME = #FALSE
 VAR GAME_OVER, MUGWUMPS_FOUND
 VAR B, TX, TY, TSTATUS, SX#, SY#
@@ -246,107 +324,6 @@ WHILE EXIT_GAME == #FALSE
  ENDIF
 WEND
 END
-DEF DRAW_CONSOLE
- VAR CON_W = #SCREEN_W / #TEXT_SIZE
- VAR CON_H = #SCREEN_H / #TEXT_SIZE
- CONST #CHAR_SIZE = 8
- VAR I, DX, DY, DIST, MX, MY
- 
- COLOR #C_WHITE
- LOCATE 1, 1
- PRINT #GAME_TITLE$
- 
- IF GUESS_COUNT > 0 THEN
-  FOR I = 0 TO COUNT_MUGWUMPS - 1 
-   LOCATE 1, 3 + (I * 2)
-   PRINT "#" + STR$(I + 1) + "  ";
-   MX = (1 + LEN("#" + STR$(I + 1) + " ")) * #CHAR_SIZE
-   MY = (3 + (I * 2)) * #CHAR_SIZE
-   DRAW_MUGWUMP MX, MY, #CHAR_SIZE, MUGWUMP_COLOR[I], MUGWUMP_EYE_COLOR[I], MUGWUMP_PUPIL_COLOR[I], MUGWUMP_MOUTH_COLOR[I]
-   IF MUGWUMP_FOUND[I] THEN
-    PRINT " FOUND!"
-   ELSE
-    DX = MUGWUMP_X[I] - GUESS_X[GUESS_COUNT - 1]
-    DY = MUGWUMP_Y[I] - GUESS_Y[GUESS_COUNT - 1]
-    DIST = SQR(DX * DX + DY * DY)
-    PRINT " is " + FORMAT$("%0.2F", DIST) + " units away"
-   ENDIF
-  NEXT I
-  LOCATE 1, 5 + (2 * COUNT_MUGWUMPS)
- ELSE
-  'SHOW HELP TEXT
-  LOCATE 1, 3
-  PRINT "Find all the Mugwumps to win!"
-  LOCATE 1, 5
-  PRINT "Select a square to scan for a Mugwump"
-  LOCATE 1, 7
-  PRINT "Use the D Pad  or Joystick  to move."
-  LOCATE 1, 9
-  PRINT "The B button  will select a square"
-  LOCATE 1, 11
-  PRINT "You can also use the touch screen."
-  LOCATE 1, 13
-  PRINT "Press the X button  to quit the game."
-  LOCATE 1, 17
- ENDIF
- PRINT "You have " + STR$(MAX_GUESSES - GUESS_COUNT) + " guesses remaining."
-
-END
-
-DEF DRAW_GRID POS_X, POS_Y
- VAR I, J, TX, TY, X, Y
- 
- GCOLOR #C_WHITE 
- FOR J = 0 TO GRID_H
-  GLINE GRID_X, GRID_Y + (J * CELL_H), GRID_X + (GRID_W * CELL_W), GRID_Y + (J * CELL_H), #C_WHITE
- NEXT J
- 
- TX = GRID_X - #TEXT_SIZE
- TY = GRID_Y + (GRID_H * CELL_H) - FLOOR((CELL_H - #TEXT_SIZE) / 2) - #TEXT_SIZE
- FOR J = 0 TO GRID_H - 1
-  GPUTCHR TX, TY - (J * CELL_H), STR$(J), #TEXT_SIZE, #C_WHITE
- NEXT J
- 
- FOR I = 0 TO GRID_W
-  GLINE GRID_X + (I * CELL_W), GRID_Y, GRID_X + (I * CELL_W), GRID_Y + (GRID_H * CELL_H), #C_WHITE
- NEXT I
- 
- TX = GRID_X + FLOOR((CELL_W - #TEXT_SIZE) / 2)
- TY = GRID_Y + (GRID_H * CELL_H) + FLOOR(#TEXT_SIZE / 2)
- FOR I = 0 TO GRID_W - 1
-  GPUTCHR TX + (I * CELL_W), TY, STR$(I), #TEXT_SIZE, #C_WHITE
- NEXT J
- 
- FOR I = 0 TO GUESS_COUNT - 1
-  X = GRID_X + 1 + (CELL_W * GUESS_X[I])
-  Y = GRID_Y + 1 + (CELL_H * GUESS_Y[I])
-  GFILL X, Y, X + CELL_W - 2, Y + CELL_H - 2, #C_RED 
- NEXT I
- 
- IF POS_X >= 0 AND POS_X < GRID_W AND POS_Y >= 0 AND POS_Y < GRID_H THEN
-  X = GRID_X + 3 + (CELL_W * POS_X)
-  Y = GRID_Y + 3 + (CELL_H * POS_Y)
-  GFILL X, Y, X + CELL_W - 6, Y + CELL_H - 6, #C_TEAL 
- ENDIF
- 
- FOR I = 0 TO COUNT_MUGWUMPS - 1
-  IF MUGWUMP_FOUND[I] == #TRUE THEN
-   DRAW_MUGWUMP GRID_X + (CELL_W * MUGWUMP_X[I]) + 1, GRID_Y + (CELL_H * MUGWUMP_Y[I]) + 1, CELL_W - 2, MUGWUMP_COLOR[I], MUGWUMP_EYE_COLOR[I], MUGWUMP_PUPIL_COLOR[I], MUGWUMP_MOUTH_COLOR[I]
-  ENDIF
- NEXT I
-END
-
-DEF INIT_GRID
- CELL_W = (#SCREEN_W - (#BORDER_W * 2)) / GRID_W
- CELL_H = (#SCREEN_H - (#BORDER_H * 2)) / GRID_H
- CELL_W = MIN(CELL_W, CELL_H)
- CELL_H = CELL_W
- 
- GRID_X = #SCREEN_W - (CELL_W * GRID_W) - #BORDER_W
- GRID_Y = FLOOR((#SCREEN_H - (CELL_H * GRID_H)) / 2)
- 
- GUESS_COUNT = 0
-END
 
 DEF IS_GUESS_OK(X, Y)
  VAR I
@@ -435,11 +412,22 @@ screen = pygame.display.set_mode((SCREEN_W, SCREEN_H))
 running = True
 
 grid = Grid()
-
+pygame.key.set_repeat(250, 100)
 while running:
     event = pygame.event.poll()
-    if event.type == pygame.QUIT:
+    if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
         running = False
+    elif event.type == pygame.KEYDOWN:
+        if event.key == pygame.K_LEFT or event.key == pygame.K_a:
+            grid.moveLeft()
+        elif event.key == pygame.K_RIGHT or event.key == pygame.K_d:
+            grid.moveRight()
+        elif event.key == pygame.K_UP or event.key == pygame.K_w:
+            grid.moveUp()
+        elif event.key == pygame.K_DOWN or event.key == pygame.K_s:
+            grid.moveDown()
+
+
     #elif event.type == pygame.MOUSEBUTTONDOWN and event.button == LEFT:
     #    print("You pressed the left mouse button at (%d, %d)" % event.pos)
     #elif event.type == pygame.MOUSEBUTTONUP and event.button == LEFT:
