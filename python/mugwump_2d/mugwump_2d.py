@@ -1,5 +1,5 @@
-import random, sys, time, math, pygame
-from pygame.locals import *
+import random, sys, time, math, pygame, pygame.locals
+#from pygame.locals import *
 
 # MUGWUMP 2D
 # ----------
@@ -43,8 +43,8 @@ class Console:
         self.borderHeight = borderHeight
         self.gameTitle = gameTitle
         self.textSize = textSize
-        self.font = pygame.font.SysFont(None, textSize)
-        self.fontLarge = pygame.font.SysFont(None, textSize + 2)
+        self.font = pygame.font.Font(pygame.font.match_font('sans'), textSize)
+        self.fontLarge = pygame.font.Font(pygame.font.match_font('sans', True), textSize + 2)
         
     def draw(self, surf, guesses, maxGuesses, mugwumps):
         # Draw the title
@@ -57,11 +57,15 @@ class Console:
         r.centerx = x
         surf.blit(textSurf, r)
 
+        x = self.borderWidth
+        y = self.borderHeight
+
         if len(guesses) > 0:
             # Draw the console.
             y = self.borderHeight
             for i, mugwump in enumerate(mugwumps):
                 x = self.borderWidth
+                print('{x}, {y}'.format(x=x, y=y))
                 textSurf = self.font.render('#' + str(i) + ' ', False, WHITE, None)
                 r = textSurf.get_rect()
                 r.top = y
@@ -75,10 +79,10 @@ class Console:
                 if (mugwump.found):
                     message = ' FOUND!'
                 else:
-                    dx = guesses[-1]['x']
-                    dy = guesses[-1]['y']
+                    dx = guesses[-1]['x'] - mugwump.x
+                    dy = guesses[-1]['y'] - mugwump.y
                     dist = math.sqrt(dx * dx + dy * dy)
-                    message = f' is {dist:.2f} units away'
+                    message = ' is {dist:.2f} units away'.format(dist=dist)
                 textSurf = self.font.render(message, False, WHITE, None)
                 r = textSurf.get_rect()
                 r.top = y
@@ -103,7 +107,7 @@ class Console:
                 y = y + r.height + self.borderHeight
                 surf.blit(textSurf, r)
 
-        textSurf = self.font.render(f'You have {maxGuesses - len(guesses)} guesses remaining.', False, WHITE, None)
+        textSurf = self.font.render('You have {remaining} guesses remaining.'.format(remaining=maxGuesses - len(guesses)), False, WHITE, None)
         r = textSurf.get_rect()
         r.top = y + (self.borderHeight * 3)
         r.left = x
@@ -117,7 +121,7 @@ class Grid:
         self.console = Console(gameTitle, self.textSize, borderWidth, borderHeight)
         self.maxGuesses = maxGuesses
         self.mugwumps = []
-        font = pygame.font.SysFont(None, textSize)
+        font = pygame.font.Font(pygame.font.match_font('sans'), textSize)
 
         # Save the digits on the side of the grid to pre-rendered surfaces.
         self.digits = []
@@ -134,6 +138,24 @@ class Grid:
 
         self.guesses = []
         self.pos = {'x': 0, 'y': 0}
+    
+    def click(self, x, y):
+        gridX = x - self.x
+        gridY = y - self.y
+        isGridLine = ((gridX % self.cellW == 0) or (gridY % self.cellH == 0))
+        if (gridX > 0 and gridX < self.cellW * self.width and gridY > 0 and gridY < self.cellH * self.height and isGridLine == False):
+            px = math.floor(gridX / self.cellW)
+            py = math.floor(gridY / self.cellH)
+            self.pos = {'x': px, 'y': py}
+            self.select()
+
+    def isGuessOK(self, x, y):
+        # Guess is not ok if we already have one at the same position.
+        # filter will go through the array and find matches
+        # lambda does an inline function that returns true if the current guess is at the same position.
+        # turn it into a list and return the length.
+        # if that is greater than zero we already have that one and should return false, otherwise it is ok.
+        return  len(list(filter(lambda guess: guess['x'] == x and guess['y'] == y, self.guesses))) == 0
 
     def moveLeft(self):
         self.pos['x'] = max(0, self.pos['x'] - 1)
@@ -147,7 +169,7 @@ class Grid:
     def moveDown(self):
         self.pos['y'] = min(self.height - 1, self.pos['y'] + 1)
     
-    def newGame(self, numMugwumps):
+    def newGame(self, numMugwumps = COUNT_MUGWUMPS):
         self.guesses = []
         self.mugwumps = []
         for i in range(numMugwumps):
@@ -157,15 +179,20 @@ class Grid:
             while not positionOK:
                 x = random.randrange(0, self.width)
                 y = random.randrange(0, self.height)
-                positionOK = True
-                # can I replace this with a list comprehension?
-                for j in range(len(self.mugwumps)):
-                    if (x == self.mugwumps[j].x and y == self.mugwumps[j].y):
-                        positionOK = False
-                        break
-                color = bodyColors[i % len(bodyColors)]
-                self.mugwumps.append(Mugwump(False, x, y, color, WHITE, BLACK, BLACK))
-    
+                positionOK = len(list(filter(lambda mugwump: mugwump.x == x and mugwump.y == y, self.mugwumps))) == 0
+            color = bodyColors[i % len(bodyColors)]
+            self.mugwumps.append(Mugwump(False, x, y, color, WHITE, BLACK, BLACK))
+            print('Mugwump {i} is at {x}, {y}'.format(i=i, x=x, y=y))
+
+    def select(self):
+        x = self.pos['x']
+        y = self.pos['y']
+
+        if self.isGuessOK(x, y):
+            self.guesses.append({'x': x, 'y': y})
+            for mugwump in filter(lambda mugwump: mugwump.x == x and mugwump.y == y, self.mugwumps):
+                mugwump.found = True
+
     def draw(self, surf):
         self.console.draw(surf, self.guesses, self.maxGuesses, self.mugwumps)
         # Horizontal lines
@@ -202,7 +229,7 @@ class Grid:
 
         for mugwump in self.mugwumps:
             if mugwump.found:
-                mugwump.draw(surf, self.x + (self.cellW * mugwump.x) + 1, self.y + (self.cellH) + 1, self.cellW - 2)
+                mugwump.draw(surf, self.x + (self.cellW * mugwump.x) + 1, self.y + (self.cellH * mugwump.y) + 1, self.cellW - 2)
 
 class Mugwump:
     def __init__(self, found, x, y, color, eyeColor, pupilColor, mouthColor):
@@ -215,17 +242,17 @@ class Mugwump:
         self.mouthColor = mouthColor
 
     def draw(self, surf, x, y, size):
-        centerX = x + math.floor(size / 2)
-        centerY = y + math.floor(size / 2)
+        centerX = int(x + math.floor(size / 2))
+        centerY = int(y + math.floor(size / 2))
         
         eyeDx = math.floor(size /4)
         eyeDy = math.floor(size / 4)
 
-        pygame.draw.circle(surf, self.color, (centerX, centerY), math.floor(size / 2), 0)
-        pygame.draw.circle(surf, self.eyeColor, (centerX - eyeDx, centerY - eyeDy), math.floor(size / 5), 0)
-        pygame.draw.circle(surf, self.eyeColor, (centerX + eyeDx, centerY - eyeDy), math.floor(size / 5), 0)
-        pygame.draw.circle(surf, self.pupilColor, (centerX - eyeDx, centerY - eyeDy), math.floor(size / 10), 0)
-        pygame.draw.circle(surf, self.pupilColor, (centerX + eyeDx, centerY - eyeDy), math.floor(size / 10), 0)
+        pygame.draw.circle(surf, self.color, (centerX, centerY), int(size / 2), 0)
+        pygame.draw.circle(surf, self.eyeColor, (centerX - eyeDx, centerY - eyeDy), int(size / 5), 0)
+        pygame.draw.circle(surf, self.eyeColor, (centerX + eyeDx, centerY - eyeDy), int(size / 5), 0)
+        pygame.draw.circle(surf, self.pupilColor, (centerX - eyeDx, centerY - eyeDy), int(size / 10), 0)
+        pygame.draw.circle(surf, self.pupilColor, (centerX + eyeDx, centerY - eyeDy), int(size / 10), 0)
 
 
 '''        
@@ -412,27 +439,26 @@ screen = pygame.display.set_mode((SCREEN_W, SCREEN_H))
 running = True
 
 grid = Grid()
+grid.newGame()
 pygame.key.set_repeat(250, 100)
 while running:
     event = pygame.event.poll()
-    if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
+    if event.type == pygame.locals.QUIT or (event.type == pygame.locals.KEYDOWN and event.key == pygame.locals.K_ESCAPE):
         running = False
-    elif event.type == pygame.KEYDOWN:
-        if event.key == pygame.K_LEFT or event.key == pygame.K_a:
+    elif event.type == pygame.locals.KEYDOWN:
+        if event.key == pygame.locals.K_LEFT or event.key == pygame.locals.K_a:
             grid.moveLeft()
-        elif event.key == pygame.K_RIGHT or event.key == pygame.K_d:
+        elif event.key == pygame.locals.K_RIGHT or event.key == pygame.locals.K_d:
             grid.moveRight()
-        elif event.key == pygame.K_UP or event.key == pygame.K_w:
+        elif event.key == pygame.locals.K_UP or event.key == pygame.locals.K_w:
             grid.moveUp()
-        elif event.key == pygame.K_DOWN or event.key == pygame.K_s:
+        elif event.key == pygame.locals.K_DOWN or event.key == pygame.locals.K_s:
             grid.moveDown()
-
-
-    #elif event.type == pygame.MOUSEBUTTONDOWN and event.button == LEFT:
-    #    print("You pressed the left mouse button at (%d, %d)" % event.pos)
-    #elif event.type == pygame.MOUSEBUTTONUP and event.button == LEFT:
-    #    print("You released the left mouse button at (%d, %d)" % event.pos)
-
+        elif event.key == pygame.locals.K_SPACE or event.key == pygame.locals.K_RETURN or event.key == pygame.locals.K_KP_ENTER:
+            grid.select()
+    elif event.type == pygame.locals.MOUSEBUTTONUP and event.button == 1: # 1 = Left mouse button
+            grid.click(event.pos[0], event.pos[1])
+    
     screen.fill((0, 0, 0))
     grid.draw(screen)
     pygame.display.flip()
