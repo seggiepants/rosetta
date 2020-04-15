@@ -7,7 +7,6 @@ import random, sys, time, math, pygame, pygame.locals
 # by Bob Albrecht, Bud Valenti, Edited by David H. Ahl
 # ported by SeggiePants
 
-FPS = 30 # Frames per second
 
 GAME_TITLE = 'MUGWUMP 2D'
 TEXT_SIZE = 18
@@ -65,7 +64,6 @@ class Console:
             y = self.borderHeight
             for i, mugwump in enumerate(mugwumps):
                 x = self.borderWidth
-                print('{x}, {y}'.format(x=x, y=y))
                 textSurf = self.font.render('#' + str(i) + ' ', False, WHITE, None)
                 r = textSurf.get_rect()
                 r.top = y
@@ -149,6 +147,14 @@ class Grid:
             self.pos = {'x': px, 'y': py}
             self.select()
 
+    def isGameOver(self):
+        mugwumpsFound = sum(map(lambda mugwump: 1 if mugwump.found else 0, self.mugwumps))
+        return len(self.guesses) >= self.maxGuesses or mugwumpsFound == len(self.mugwumps)
+
+    def isGameWon(self):
+        mugwumpsFound = sum(map(lambda mugwump: 1 if mugwump.found else 0, self.mugwumps))
+        return len(self.guesses) <= self.maxGuesses and mugwumpsFound == len(self.mugwumps)
+        
     def isGuessOK(self, x, y):
         # Guess is not ok if we already have one at the same position.
         # filter will go through the array and find matches
@@ -182,7 +188,6 @@ class Grid:
                 positionOK = len(list(filter(lambda mugwump: mugwump.x == x and mugwump.y == y, self.mugwumps))) == 0
             color = bodyColors[i % len(bodyColors)]
             self.mugwumps.append(Mugwump(False, x, y, color, WHITE, BLACK, BLACK))
-            print('Mugwump {i} is at {x}, {y}'.format(i=i, x=x, y=y))
 
     def select(self):
         x = self.pos['x']
@@ -253,214 +258,91 @@ class Mugwump:
         pygame.draw.circle(surf, self.eyeColor, (centerX + eyeDx, centerY - eyeDy), int(size / 5), 0)
         pygame.draw.circle(surf, self.pupilColor, (centerX - eyeDx, centerY - eyeDy), int(size / 10), 0)
         pygame.draw.circle(surf, self.pupilColor, (centerX + eyeDx, centerY - eyeDy), int(size / 10), 0)
+        pygame.draw.circle(surf, self.mouthColor, (centerX, centerY + int(eyeDy / 2)), int(size / 6), 0)
 
+def playAgain(surf, grid, textSize = TEXT_SIZE):
+    messages = ['',
+                'would you like to play again?',
+                'Y = Yes',
+                'N = No']
+    messages[0] = 'Congratulations! You Won!' if grid.isGameWon() else 'Sorry, you lost.'
+    font = pygame.font.Font(pygame.font.match_font('sans'), textSize)
+    surfaces = []
+    for message in messages:
+        surfaces.append(font.render(message, False, BLACK, None))
 
-'''        
-VAR EXIT_GAME = #FALSE
-VAR GAME_OVER, MUGWUMPS_FOUND
-VAR B, TX, TY, TSTATUS, SX#, SY#
-VAR I, POS_X, POS_Y
+    w = max(surface.get_rect().width for surface in  surfaces) + (textSize * 4)
+    h = sum(surface.get_rect().height for surface in surfaces)  + (textSize * 4)
+    x = int((surf.get_rect().width - w) / 2)
+    y = int((surf.get_rect().height - h) / 2)
+    surf.fill((0, 0, 0))
+    grid.draw(surf)
+    pygame.draw.rect(surf, DARK_GRAY, (x, y, w, h), 0)
+    pygame.draw.rect(surf, LIGHT_GRAY, (x + textSize, y + textSize, w - (2 * textSize), h - (2 * textSize)), 0)
 
-ACLS
-XSCREEN #SCREEN_W, #SCREEN_H
+    x += (2 * textSize)
+    y += (2 * textSize)
+    for surface in surfaces:
+        r = surface.get_rect()
+        r.left = x
+        r.top = y
+        y += max(r.height, textSize)
+        surf.blit(surface, r)
 
-EXIT_GAME = #FALSE
-INIT_GRID
+    pygame.display.flip()
 
-WHILE EXIT_GAME == #FALSE
- INIT_MUGWUMPS
- GUESS_COUNT = 0
- POS_X = FLOOR((GRID_W - 1) / 2)
- POS_Y = FLOOR((GRID_H - 1) / 2)
- GAME_OVER = #FALSE
- EXIT_GAME = #FALSE
- 
- WHILE GAME_OVER == #FALSE
-  TOUCH OUT TSTATUS, TX, TY
-  
-  STICK #CONTROLLER_ID, #STICK_LEFT OUT SX#, SY#
-  
-  IF (BUTTON(#CONTROLLER_ID, #B_LUP, #BUTTON_PRESSED) OR SY# < -0.5) THEN
-   POS_Y = MAX(0, POS_Y - 1)
-  ENDIF
-  
-  IF (BUTTON(#CONTROLLER_ID, #B_LDOWN, #BUTTON_PRESSED) OR SY# > 0.5) THEN
-   POS_Y = MIN(GRID_H - 1, POS_Y + 1)
-  ENDIF
-  
-  IF (BUTTON(#CONTROLLER_ID, #B_LLEFT, #BUTTON_PRESSED) OR SX# < -0.5) THEN
-   POS_X = MAX(0, POS_X - 1)
-  ENDIF
-  
-  IF (BUTTON(#CONTROLLER_ID, #B_LRIGHT, #BUTTON_PRESSED) OR SX# > 0.5) THEN
-   POS_X = MIN(GRID_W - 1, POS_X + 1)
-  ENDIF
-  
-  B = BUTTON(#CONTROLLER_ID, #B_RDOWN, #BUTTON_PRESSED)
-  
-  
-  'TOUCHED?
-  IF TSTATUS != 0 THEN
-   'WITHIN THE GRID? 
-   IF TX >= GRID_X AND TX <= GRID_X + (GRID_W * CELL_W) AND TY >= GRID_Y AND TY <= GRID_Y + (GRID_H * CELL_H) THEN
-    'WARP THERE
-    POS_X = FLOOR((TX - GRID_X) / CELL_W)
-    POS_Y = FLOOR((TY - GRID_Y) / CELL_H)
-    
-    'SET THE ACTION BUTTON
-    B = #TRUE
-   ENDIF
-  ENDIF
-  
-  IF BUTTON(#CONTROLLER_ID, #B_RUP, #BUTTON_PRESSED) OR GUESS_COUNT >= MAX_GUESSES THEN
-   GAME_OVER = #TRUE
-   IF BUTTON(#CONTROLLER_ID, #B_RUP, #BUTTON_PRESSED) THEN
-    EXIT_GAME = #TRUE
-   ENDIF
-  ELSEIF B == #TRUE THEN
-   IF IS_GUESS_OK(POS_X, POS_Y) THEN
-    GUESS_X[GUESS_COUNT] = POS_X
-    GUESS_Y[GUESS_COUNT] = POS_Y
-    INC GUESS_COUNT
-    FOR I = 0 TO COUNT_MUGWUMPS - 1
-     'MARK ANY MUGWUMP FOUND IF POSSIBLE
-     IF MUGWUMP_X[I] == POS_X AND MUGWUMP_Y[I] == POS_Y THEN
-      MUGWUMP_FOUND[I] = #TRUE
-     ENDIF
-    NEXT I
-   ENDIF
-  ENDIF
-  
-  CLS
-  GCLS
-  DRAW_CONSOLE
-  DRAW_GRID POS_X, POS_Y
-  MUGWUMPS_FOUND = 0
-  FOR I = 0 TO COUNT_MUGWUMPS - 1
-   IF MUGWUMP_FOUND[I] == #TRUE THEN
-    INC MUGWUMPS_FOUND
-   ENDIF
-  NEXT I
-  VSYNC FPS
-  IF MUGWUMPS_FOUND >= COUNT_MUGWUMPS THEN
-   GAME_OVER = #TRUE
-  ENDIF
- WEND
- IF EXIT_GAME == #FALSE THEN
-  EXIT_GAME = !PLAY_AGAIN()
- ENDIF
-WEND
-END
+    valueSelected = False
+    ret = False
 
-DEF IS_GUESS_OK(X, Y)
- VAR I
- 
- FOR I = 0 TO GUESS_COUNT - 1
-  IF GUESS_X[I] == X AND GUESS_Y[I] == Y THEN
-   RETURN #FALSE
-  ENDIF
- NEXT I
- 
- RETURN #TRUE
-END
-
-DEF PLAY_AGAIN()
- VAR B, I, MAX_WIDTH, MUGWUMPS_FOUND = 0
- VAR W, H, X, Y, VALUE_SELECTED, RET
- VAR CON_W = #SCREEN_W / #TEXT_SIZE
- VAR CON_H = #SCREEN_H / #TEXT_SIZE
- VAR MESSAGE$[4]
- 
- FOR I = 0 TO COUNT_MUGWUMPS - 1
-  IF MUGWUMP_FOUND[I] THEN
-   INC MUGWUMPS_FOUND
-  ENDIF
- NEXT I
- 
- IF MUGWUMPS_FOUND == COUNT_MUGWUMPS THEN
-  MESSAGE$[0] = "Congratulations! You Won!"
- ELSE
-  MESSAGE$[0] = "Sorry, you lost."
- ENDIF
- 
- MESSAGE$[1] = "Would you like to play again?"
- MESSAGE$[2] = " = No"
- MESSAGE$[3] = " = Yes"
- 
- MAX_WIDTH = LEN(MESSAGE$[0])
- FOR I = 1 TO LEN(MESSAGE$) - 1
-  IF LEN(MESSAGE$[I]) > MAX_WIDTH THEN
-   MAX_WIDTH = LEN(MESSAGE$[I])
-  ENDIF
- NEXT I
- 
- W = MAX_WIDTH + 4
- H = LEN(MESSAGE$) + 4
- X = FLOOR((CON_W - W) / 2)
- Y = FLOOR((CON_H - H) / 2)
- 
- DRAW_GRID POS_X, POS_Y
- 
- GFILL X * #TEXT_SIZE, Y * #TEXT_SIZE, (X + W) * #TEXT_SIZE, (Y + H) * #TEXT_SIZE, DARK_GRAY
- GFILL #TEXT_SIZE + (X * #TEXT_SIZE), #TEXT_SIZE + (Y * #TEXT_SIZE), (X + W) * #TEXT_SIZE - #TEXT_SIZE, (Y + H) * #TEXT_SIZE - #TEXT_SIZE, LIGHT_GRAY
- 
- INC X, 2
- INC Y, 2
- 
- 
- FOR I = 0 TO LEN(MESSAGE$) - 1
-  LOCATE X, Y
-  GPUTCHR X * #TEXT_SIZE, Y * #TEXT_SIZE, MESSAGE$[I], #TEXT_SIZE, #C_BLACK, #G_ALPHA
-  INC Y
- NEXT I
- VALUE_SELECTED = #FALSE
- RET = #FALSE
- 
- VSYNC FPS * 2 'WAIT A BIT FOR USER TO LET GO OF ANY BUTTONS
- 
- WHILE !VALUE_SELECTED
-  B = BUTTON(3) 'MOMENT RELEASED
-  
-  IF BUTTON(#CONTROLLER_ID, #B_RRIGHT, #BUTTON_PRESSED) THEN
-   RET = #FALSE
-   VALUE_SELECTED = #TRUE
-  ELSEIF BUTTON(#CONTROLLER_ID, #B_RDOWN, #BUTTON_PRESSED) THEN
-   RET = #TRUE
-   VALUE_SELECTED = #TRUE
-  ENDIF
-  VSYNC
- WEND
- RETURN RET
-END
-'''
+    while not valueSelected:
+        event = pygame.event.poll()
+        if event.type == pygame.locals.QUIT or (event.type == pygame.locals.KEYDOWN and event.key == pygame.locals.K_ESCAPE):
+            ret = False
+            valueSelected = True
+        elif event.type == pygame.locals.KEYDOWN:
+            if event.key == pygame.locals.K_y or event.key == pygame.locals.K_RETURN or event.key == pygame.locals.K_KP_ENTER:
+                ret = True
+                valueSelected = True
+            elif event.key == pygame.locals.K_n or event.key == pygame.locals.K_ESCAPE:
+                ret = False
+                valueSelected = True
+    return ret
 
 pygame.init()
 screen = pygame.display.set_mode((SCREEN_W, SCREEN_H))
 running = True
 
 grid = Grid()
-grid.newGame()
 pygame.key.set_repeat(250, 100)
-while running:
-    event = pygame.event.poll()
-    if event.type == pygame.locals.QUIT or (event.type == pygame.locals.KEYDOWN and event.key == pygame.locals.K_ESCAPE):
-        running = False
-    elif event.type == pygame.locals.KEYDOWN:
-        if event.key == pygame.locals.K_LEFT or event.key == pygame.locals.K_a:
-            grid.moveLeft()
-        elif event.key == pygame.locals.K_RIGHT or event.key == pygame.locals.K_d:
-            grid.moveRight()
-        elif event.key == pygame.locals.K_UP or event.key == pygame.locals.K_w:
-            grid.moveUp()
-        elif event.key == pygame.locals.K_DOWN or event.key == pygame.locals.K_s:
-            grid.moveDown()
-        elif event.key == pygame.locals.K_SPACE or event.key == pygame.locals.K_RETURN or event.key == pygame.locals.K_KP_ENTER:
-            grid.select()
-    elif event.type == pygame.locals.MOUSEBUTTONUP and event.button == 1: # 1 = Left mouse button
-            grid.click(event.pos[0], event.pos[1])
-    
-    screen.fill((0, 0, 0))
-    grid.draw(screen)
-    pygame.display.flip()
 
-print('goodbye')
+exitGame = False
+while not exitGame:
+    gameOver = False
+    grid.newGame()
+    while not gameOver:
+        event = pygame.event.poll()
+        if event.type == pygame.locals.QUIT or (event.type == pygame.locals.KEYDOWN and event.key == pygame.locals.K_ESCAPE):
+            exitGame = True
+            break
+        elif event.type == pygame.locals.KEYDOWN:
+            if event.key == pygame.locals.K_LEFT or event.key == pygame.locals.K_a:
+                grid.moveLeft()
+            elif event.key == pygame.locals.K_RIGHT or event.key == pygame.locals.K_d:
+                grid.moveRight()
+            elif event.key == pygame.locals.K_UP or event.key == pygame.locals.K_w:
+                grid.moveUp()
+            elif event.key == pygame.locals.K_DOWN or event.key == pygame.locals.K_s:
+                grid.moveDown()
+            elif event.key == pygame.locals.K_SPACE or event.key == pygame.locals.K_RETURN or event.key == pygame.locals.K_KP_ENTER:
+                grid.select()
+        elif event.type == pygame.locals.MOUSEBUTTONUP and event.button == 1: # 1 = Left mouse button
+                grid.click(event.pos[0], event.pos[1])
+
+        screen.fill((0, 0, 0))
+        grid.draw(screen)
+        pygame.display.flip()
+        if grid.isGameOver():
+                gameOver = True
+    if exitGame:
+        break
+    exitGame = not playAgain(screen, grid)
