@@ -22,7 +22,7 @@ settings = {
 // Colors
 BLACK = 'rgb(0, 0, 0)';
 DARK_GRAY = 'rgb(64, 64, 64)';
-LIGHT_BLUE = 'rbg(128, 128, 255)';
+LIGHT_BLUE = 'rgb(128, 128, 255)';
 LIGHT_GRAY = 'rgb(192, 192, 192)';
 ORANGE = 'rgb(255, 128, 0)';
 PINK = 'rgb(255, 0, 128)';
@@ -32,6 +32,9 @@ VIOLET = 'rgb(192, 0, 255)';
 WHITE = 'rgb(255, 255, 255)';
 
 bodyColors = [PINK, VIOLET, LIGHT_BLUE, ORANGE];
+
+var mugwumps = [];
+var guesses = [];
 
 let elem = document.getElementById('test');
 elem.style.backgroundColor = PINK
@@ -77,30 +80,30 @@ function buildGrid(parentId, settings) {
     parent.style.gridTemplateRows = 'repeat(' + settings.GRID_H.toString() + ', 1fr) auto';
 
     for(var j = settings.GRID_H - 1; j >= 0; j--) {
-	// Add the row counter.
-	elem = document.createElement('span');
-	elem.innerText = j.toString();
-	elem.id = 'row_' + j.toString();
-	elem.className = 'cell_index';
-	parent.appendChild(elem);
-	for(var i = 0; i < settings.GRID_W; i++) {
-	    elem = document.createElement('span');
-	    elem.id = 'cell_' + j.toString() + '_' + i.toString();
-	    elem.className = 'cell';
-	    elem.onclick = cellClick;
-	    parent.appendChild(elem);
-	}
+        // Add the row counter.
+        elem = document.createElement('span');
+        elem.innerText = j.toString();
+        elem.id = 'row_' + j.toString();
+        elem.className = 'cell_index';
+        parent.appendChild(elem);
+        for(var i = 0; i < settings.GRID_W; i++) {
+            elem = document.createElement('span');
+            elem.id = 'cell_' + j.toString() + '_' + i.toString();
+            elem.className = 'cell';
+            elem.onclick = cellClick;
+            parent.appendChild(elem);
+        }
     }
     // axis divider
     elem = document.createElement('span');
     elem.innerHtml = '&nbsp;';
     parent.appendChild(elem);
     for(var i = 0; i < settings.GRID_W; i++) {
-	elem = document.createElement('span');
-	elem.innerText = i.toString();
-	elem.id = 'col_' + i.toString();
-	elem.className = 'cell_index';
-	parent.appendChild(elem);
+        elem = document.createElement('span');
+        elem.innerText = i.toString();
+        elem.id = 'col_' + i.toString();
+        elem.className = 'cell_index';
+        parent.appendChild(elem);
     }
 }
 
@@ -112,14 +115,13 @@ function removeChildren(elem) {
 
 function cellClick(event) {
     if (event.srcElement.id.startsWith('cell_')) {
-	parts = event.srcElement.id.split('_');
-	pos.x = parseInt(parts[2]);
-	pos.y = parseInt(parts[1]);
-	// cell is parts[0]
-	updateSelection();
+        parts = event.srcElement.id.split('_');
+        pos.x = parseInt(parts[2]);
+        pos.y = parseInt(parts[1]);
+        // cell is parts[0]
+        updateSelection();
+        select();
     }
-    else
-	console.log(event);
 }
 
 function keyUpHandler(event) {
@@ -132,32 +134,32 @@ function keyUpHandler(event) {
     case 'ArrowDown':
     case 'KeyD':
     case 'ArrowRight':
-	switch(event.code) {
-	case 'KeyW':
-	case 'ArrowUp':
-	    pos.y = Math.min(settings.GRID_H - 1, pos.y + 1);
-	    break;
-	case 'KeyA':
-	case 'ArrowLeft':
-	    pos.x = Math.max(0, pos.x - 1);
-	    break;
-	case 'KeyS':
-	case 'ArrowDown':
-	    pos.y = Math.max(0, pos.y - 1);
-	    break;
-	case 'KeyD':
-	case 'ArrowRight':
-	    pos.x = Math.min(settings.GRID_W - 1, pos.x + 1);
-	    break;
-	}
-	updateSelection();
-	break;
+        switch(event.code) {
+        case 'KeyW':
+        case 'ArrowUp':
+            pos.y = Math.min(settings.GRID_H - 1, pos.y + 1);
+            break;
+        case 'KeyA':
+        case 'ArrowLeft':
+            pos.x = Math.max(0, pos.x - 1);
+            break;
+        case 'KeyS':
+        case 'ArrowDown':
+            pos.y = Math.max(0, pos.y - 1);
+            break;
+        case 'KeyD':
+        case 'ArrowRight':
+            pos.x = Math.min(settings.GRID_W - 1, pos.x + 1);
+            break;
+        }
+        updateSelection();
+        break;
     case 'Space':
     case 'Enter':
-	// select current cell.
-	break;
-    default:
-	console.log(event.code);
+        // select current cell.
+        select();
+        break;
+    // default:
     }
 }
 
@@ -173,6 +175,58 @@ function updateSelection() {
     selected.appendChild(selection);
 }
 
+function isGuessOK(x, y) {
+    // Guess is not ok if we already have one at the same position.
+    var i, guessOK = true;
+    for(i = 0; i < guesses.length; i++) {
+        if (guesses[i].x == x && guesses[i].y == y) {
+            guessOK = false;
+            break;
+        }
+    }
+    return guessOK;
+}
+
+function newGame() {
+    var i, j, positionOK, x, y;
+    guesses = [];
+    mugwumps = [];
+    for (i = 0; i < settings.COUNT_MUGWUMPS; i++) {
+        positionOK = false;
+        x = 0;
+        y = 0;
+        while (!positionOK) {
+            x = Math.floor(Math.random() * settings.GRID_W);
+            y = Math.floor(Math.random() * settings.GRID_H);
+            positionOK = true;
+            for(j = 0; j < mugwumps.length; j++) {
+                positionOK = positionOK && (mugwumps[j].x != x || mugwumps[j].y != y);
+                if (!positionOK) 
+                    break;
+            }
+        }
+        color = bodyColors[i % bodyColors.length]
+        mugwumps.push({found: false, x: x, y: y, bodyColor: color, eyeColor: WHITE, pupilColor: BLACK, mouthColor: BLACK});
+    }
+}
+
+function select() {
+    var i, id, x, y
+    x = pos.x;
+    y = pos.y;
+    if (isGuessOK(x, y)) {
+        guesses.push({x: x, y: y});
+        id = "cell_" + y.toString() + '_' + x.toString();
+        document.getElementById(id).className += ' cell_open';
+        for(i = 0; i < mugwumps.length; i++) {
+            if (mugwumps[i].x == x && mugwumps[i].y == y) { 
+                mugwumps[i].found = true;                
+                appendMugwump(id, mugwumps[i].bodyColor, mugwumps[i].eyeColor, mugwumps[i].pupilColor, mugwumps[i].mouthColor);
+                updateSelection();
+            }
+        }
+    }
+}
 
 document.addEventListener('keydown', keyUpHandler, false);
 
@@ -182,4 +236,5 @@ var pos = {
 };
 buildGrid('grid', settings);
 // appendMugwump('cell_2_1', VIOLET, ORANGE, TEAL, PINK);
+newGame();
 updateSelection();

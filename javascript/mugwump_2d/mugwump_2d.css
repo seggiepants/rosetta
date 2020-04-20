@@ -34,8 +34,8 @@
 
 .cell {
     border: 1px solid white;
-    width: 4rem;
-    height: 4rem;
+    width: 3rem;
+    height: 3rem;
 }
 
 .cell_index {
@@ -64,8 +64,8 @@
 .mugwump_body {
     background-color: green;
     border-radius: 50%;
-    width: 4rem;
-    height: 4rem;
+    width: 3rem;
+    height: 3rem;
     position: absolute;
     z-index: 1;
 }
