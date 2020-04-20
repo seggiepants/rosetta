@@ -1,0 +1,115 @@
+#container {
+    background-color: black;
+    color: white;
+    padding: 0px;
+    margin: 0px;
+    display: flex;
+    flex-direction: column;
+    
+}
+
+#title {
+    font-size: larger;
+    width: 100%;
+    text-align: center;
+}
+
+#grid-row {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+}
+
+#console {
+    margin: 2rem;
+    line-height: 1.5;
+}
+
+#grid {
+    display: grid;
+    grid-template-columns: auto repeat(10, 1fr);
+    grid-template-rows: repeat(10, 1fr) auto;
+    padding: 1rem;
+}
+
+.cell {
+    border: 1px solid white;
+    width: 4rem;
+    height: 4rem;
+}
+
+.cell_index {
+    text-align: center;
+    align-self: center;
+    margin: 1rem;
+}
+
+.cell_selected {
+    background-color: teal;
+    width: 80%;
+    height: 80%;
+    position: relative;
+    top: 10%;
+    left: 10%;
+}
+
+.cell_open {
+    background-color: red;
+}
+
+.info_line {
+    font-size: larger;
+}
+
+.mugwump_body {
+    background-color: green;
+    border-radius: 50%;
+    width: 4rem;
+    height: 4rem;
+    position: absolute;
+    z-index: 1;
+}
+
+.mugwump_eye {
+    background-color: white;
+    width: 35%;
+    height: 35%;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.eye_left {
+    position: absolute;
+    left: 15%;
+    top: 10%;
+}
+
+.eye_right {
+    position: absolute;
+    right: 15%;
+    top: 10%;
+}
+
+.mugwump_pupil {
+    background-color: black;
+    width: 50%;
+    height: 50%;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.pupil {
+    position: absolute;
+    left: 25%;
+    top: 25%;
+}
+
+.mugwump_mouth {
+    position: absolute;
+    background-color: black;
+    width: 36%;
+    height: 45%;
+    left: 32%;
+    top: 45%;
+    border-radius: 50%;
+}
