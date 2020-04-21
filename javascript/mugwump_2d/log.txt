@@ -22,3 +22,9 @@ What is left:
 - Limit users to a set number of guesses
 - Congratulate/Console user after win/loss (no more play again y/n, just an ok button that restarts the game)
 
+2020-04-20
+----------
+The console now displays the status of if a mugwump is found or how far away it is plus the number of guesses.
+I think the only thing left is the win/lose condition and the play again popup.
+
+

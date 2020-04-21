@@ -68,9 +68,75 @@ function appendMugwump(parentId, bodyColor, eyeColor, pupilColor, mouthColor) {
     eyeRight.appendChild(pupilRight);
     body.appendChild(mouth);
     parent.appendChild(body);
+
+    return(body);
 }
 
-function buildGrid(parentId, settings) {
+function buildConsole(parentId) {
+    var parent;
+    parent = document.getElementById(parentId);
+    removeChildren(parent);
+    if (guesses.length == 0) {
+        // Draw the help text
+        var infoText;
+
+        var messages = [
+            'Select a square to scan for a Mugwump'
+          , 'Use the arrow keys to move.'
+          , 'Space bar will select a square.'
+          , 'You can also use the mouse'
+          , 'Press the Escape key to restart the game.'
+        ];
+
+        for(var i = 0; i < messages.length; i++) {
+            infoText = document.createElement('div');
+            infoText.innerText = messages[i].toString();
+            infoText.id = 'info_' + i.toString();
+            infoText.className = 'info_line';
+            parent.appendChild(infoText);
+        }
+    } else {
+        // Draw the distance lines
+        var remaining, row, row_num, row_dist;
+        var mugwump_body;        
+        var dist, dx, dy;
+        for(var i = 0; i < mugwumps.length; i++) {
+            row = document.createElement('div');            
+            row.id = 'info_' + i.toString();
+            parent.appendChild(row);
+            row_num = document.createElement('span');
+            row_num.innerText = '#' + (i + 1).toString() + ' ';
+            row_num.style.paddingRight = '0.5rem';
+            row_num.className = 'info_line';
+            row.appendChild(row_num);
+            mugwump_body = appendMugwump(row.id, mugwumps[i].bodyColor, mugwumps[i].eyeColor, mugwumps[i].pupilColor, mugwumps[i].mouthColor);
+            mugwump_body.style.width = '1rem';
+            mugwump_body.style.height = '1rem';
+            mugwump_body.style.display = 'inline-flex';
+            row_dist = document.createElement('span');
+            if (mugwumps[i].found) {                
+                row_dist.innerHTML = ' FOUND!';
+            } else {
+                dx = mugwumps[i].x - pos.x;
+                dy = mugwumps[i].y - pos.y;
+                dist = Math.sqrt(dx * dx + dy * dy);
+                row_dist.innerHTML = ` is ${dist.toFixed(2)} units away`;
+            }
+            row_dist.style.paddingLeft = '1.5rem';
+            row_dist.className = 'info_line';
+            row.appendChild(row_dist);
+        }
+    }
+    remaining = document.createElement('div');
+    remaining.innerText = `You have ${settings.MAX_GUESSES - guesses.length} guesses remaining.`    
+    remaining.className = 'info_line';
+    remaining.style.marginTop = '3rem';
+    remaining.style.textAlign = 'center';
+    parent.appendChild(remaining);
+
+}
+
+function buildGrid(parentId) {
     var elem;
     var parent = document.getElementById(parentId);
 
@@ -114,8 +180,13 @@ function removeChildren(elem) {
 }
 
 function cellClick(event) {
-    if (event.srcElement.id.startsWith('cell_')) {
-        parts = event.srcElement.id.split('_');
+    var elem;
+    elem = event.srcElement;
+    while (elem != null && !elem.id.startsWith('cell_')) {
+        elem = elem.parentElement;
+    }
+    if (elem != null) {
+        parts = elem.id.split('_');
         pos.x = parseInt(parts[2]);
         pos.y = parseInt(parts[1]);
         // cell is parts[0]
@@ -208,6 +279,8 @@ function newGame() {
         color = bodyColors[i % bodyColors.length]
         mugwumps.push({found: false, x: x, y: y, bodyColor: color, eyeColor: WHITE, pupilColor: BLACK, mouthColor: BLACK});
     }
+    buildConsole('console');
+    updateSelection();
 }
 
 function select() {
@@ -222,10 +295,11 @@ function select() {
             if (mugwumps[i].x == x && mugwumps[i].y == y) { 
                 mugwumps[i].found = true;                
                 appendMugwump(id, mugwumps[i].bodyColor, mugwumps[i].eyeColor, mugwumps[i].pupilColor, mugwumps[i].mouthColor);
-                updateSelection();
             }
         }
+        buildConsole('console');
     }
+    updateSelection();
 }
 
 document.addEventListener('keydown', keyUpHandler, false);
@@ -235,6 +309,4 @@ var pos = {
     , y: Math.floor(settings.GRID_H /2)
 };
 buildGrid('grid', settings);
-// appendMugwump('cell_2_1', VIOLET, ORANGE, TEAL, PINK);
 newGame();
-updateSelection();
