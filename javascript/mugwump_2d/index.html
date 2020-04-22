@@ -8,160 +8,19 @@
     <div id="container">
       <div id="title">MUGWUMP 2D</div>
       <div id="grid-row">
-	<div id="console">
-	  <div class="info_line">Find all the Mugwumps to win!</div>
-          <div class="info_line">Select a square to scan for a Mugwump</div>
-          <div class="info_line">Use the arrow keys to move.</div>
-          <div class="info_line">Space bar will select a square.</div>
-          <div class="info_line">You can also use the mouse.</div>
-          <div class="info_line">Press the Escape key to restart the game.</div>
+		<div id="console">
+		</div>
+		<div id="grid">
+		</div>
+      </div>
 	</div>
-	<div id="grid">
-	  <span class="cell_index">9</span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-
-	  <span class="cell_index">8</span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-	  <span class="cell cell_open">
-    <div id="test" class="mugwump_body">
-      <div class="mugwump_eye eye_left">
-	<div class="mugwump_pupil pupil"></div>
-      </div>
-      <div class="mugwump_eye eye_right">
-	<div class="mugwump_pupil pupil"></div>
-      </div>
-      <div class="mugwump_mouth"></div>
-    </div>
-    <div class="cell_selected"></div>
-	  </span>
-	  <span class="cell"></span>
-	  <span class="cell"><div class="cell_selected"></div></span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-
-	  <span class="cell_index">7</span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-
-	  <span class="cell_index">6</span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-	  <span clas4="cell"></span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-
-	  <span class="cell_index">5</span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-
-	  <span class="cell_index">4</span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-
-	  <span class="cell_index">3</span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-
-	  <span class="cell_index">2</span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-
-	  <span class="cell_index">1</span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-
-	  <span class="cell_index">0</span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-	  <span class="cell"></span>
-
-	  <span>&nbsp;</span>
-	  <span class="cell_index">0</span>
-	  <span class="cell_index">1</span>
-	  <span class="cell_index">2</span>
-	  <span class="cell_index">3</span>
-	  <span class="cell_index">4</span>
-	  <span class="cell_index">5</span>
-	  <span class="cell_index">6</span>
-	  <span class="cell_index">7</span>
-	  <span class="cell_index">8</span>
-	  <span class="cell_index">9</span>
+	<div id="message_root" class="message_holder">
+		<div class="message_box">
+			<div id="message_line_1" class="message_line">Congratulations, you Won!</div>
+			<div id="message_line_2" class="message_line">Are you ready to play again?</div>
+			<div id="message_line_3" class="message_line"><button onclick="newGame()">OK</button></div>
+		</div>
 	</div>
-      </div>
-    </div>
     <script type="text/javascript" src="mugwump_2d.js" defer></script>
   </body>
  </html>

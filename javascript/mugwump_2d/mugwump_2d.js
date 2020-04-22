@@ -6,17 +6,13 @@
  ported by SeggiePants
 */
 
+// Game default settings.
 settings = {
     GAME_TITLE: 'MUGWUMP 2D'
-    , TEXT_SIZE: 18
-    , BORDER_W: 18
-    , BORDER_H: 18
     , COUNT_MUGWUMPS: 4
     , MAX_GUESSES: 10
     , GRID_W: 10
     , GRID_H: 10
-    , SCREEN_W: 720
-    , SCREEN_H: 400
 };
 
 // Colors
@@ -31,14 +27,13 @@ TEAL = 'rgb(12, 140, 127)';
 VIOLET = 'rgb(192, 0, 255)';
 WHITE = 'rgb(255, 255, 255)';
 
+// Mugwump body colors
 bodyColors = [PINK, VIOLET, LIGHT_BLUE, ORANGE];
 
 var mugwumps = [];
 var guesses = [];
 
-let elem = document.getElementById('test');
-elem.style.backgroundColor = PINK
-
+// Add a mugwump to a cell on the grid.
 function appendMugwump(parentId, bodyColor, eyeColor, pupilColor, mouthColor) {
     var parent = document.getElementById(parentId);
     var body = document.createElement('div');
@@ -72,6 +67,7 @@ function appendMugwump(parentId, bodyColor, eyeColor, pupilColor, mouthColor) {
     return(body);
 }
 
+// build the console that shows how far you are from each mugwump
 function buildConsole(parentId) {
     var parent;
     parent = document.getElementById(parentId);
@@ -136,6 +132,7 @@ function buildConsole(parentId) {
 
 }
 
+// build the grid that you select mugwumps from.
 function buildGrid(parentId) {
     var elem;
     var parent = document.getElementById(parentId);
@@ -173,12 +170,7 @@ function buildGrid(parentId) {
     }
 }
 
-function removeChildren(elem) {
-    while (elem.firstChild){
-	elem.removeChild(elem.lastChild);
-    }
-}
-
+// A cell on the grid has been clicked.
 function cellClick(event) {
     var elem;
     elem = event.srcElement;
@@ -195,6 +187,20 @@ function cellClick(event) {
     }
 }
 
+// Have we already guessed this cell?
+function isGuessOK(x, y) {
+    // Guess is not ok if we already have one at the same position.
+    var i, guessOK = true;
+    for(i = 0; i < guesses.length; i++) {
+        if (guesses[i].x == x && guesses[i].y == y) {
+            guessOK = false;
+            break;
+        }
+    }
+    return guessOK;
+}
+
+// Handle keyboard events.
 function keyUpHandler(event) {
     switch(event.code) {
     case 'KeyW':
@@ -205,6 +211,7 @@ function keyUpHandler(event) {
     case 'ArrowDown':
     case 'KeyD':
     case 'ArrowRight':
+        // direction was pressed
         switch(event.code) {
         case 'KeyW':
         case 'ArrowUp':
@@ -230,34 +237,14 @@ function keyUpHandler(event) {
         // select current cell.
         select();
         break;
+    case 'Escape':
+        // start a new game when the escape key has been clicked.
+        newGame();
     // default:
     }
 }
 
-function updateSelection() {
-    let selection = document.getElementById('selection');
-    if (selection != null) {
-	selection.parentNode.removeChild(selection);
-    }
-    let selected = document.getElementById('cell_' + pos.y.toString() + '_' + pos.x.toString());
-    selection = document.createElement('div');
-    selection.id = 'selection';
-    selection.className = 'cell_selected';
-    selected.appendChild(selection);
-}
-
-function isGuessOK(x, y) {
-    // Guess is not ok if we already have one at the same position.
-    var i, guessOK = true;
-    for(i = 0; i < guesses.length; i++) {
-        if (guesses[i].x == x && guesses[i].y == y) {
-            guessOK = false;
-            break;
-        }
-    }
-    return guessOK;
-}
-
+// Rebuild the interface and start a new game.
 function newGame() {
     var i, j, positionOK, x, y;
     guesses = [];
@@ -279,10 +266,20 @@ function newGame() {
         color = bodyColors[i % bodyColors.length]
         mugwumps.push({found: false, x: x, y: y, bodyColor: color, eyeColor: WHITE, pupilColor: BLACK, mouthColor: BLACK});
     }
+    document.getElementById('message_root').style.visibility = 'hidden';
     buildConsole('console');
+    buildGrid('grid');
     updateSelection();
 }
 
+// Remove all children of a given node in the html tree.
+function removeChildren(elem) {
+    while (elem.firstChild){
+	elem.removeChild(elem.lastChild);
+    }
+}
+
+// select a cell in the grid. You may win or lose the game here.
 function select() {
     var i, id, x, y
     x = pos.x;
@@ -300,13 +297,41 @@ function select() {
         buildConsole('console');
     }
     updateSelection();
+    let mugwumps_remaining = false;
+    for(i = 0; i < mugwumps.length; i++) {
+        if (!mugwumps[i].found) {
+            mugwumps_remaining = true;
+            break;
+        }
+    }
+    if (mugwumps_remaining == false) {
+        document.getElementById('message_line_1').innerText = 'Congratulations, you won!';
+        document.getElementById('message_root').style.visibility = 'visible';
+    } else if(guesses.length >= settings.MAX_GUESSES) {
+        document.getElementById('message_line_1').innerText = 'Sorry.... you lost.';
+        document.getElementById('message_root').style.visibility = 'visible';
+    }
 }
 
+// move the selection indicator to the current position on the grid.
+function updateSelection() {
+    let selection = document.getElementById('selection');
+    if (selection != null) {
+	selection.parentNode.removeChild(selection);
+    }
+    let selected = document.getElementById('cell_' + pos.y.toString() + '_' + pos.x.toString());
+    selection = document.createElement('div');
+    selection.id = 'selection';
+    selection.className = 'cell_selected';
+    selected.appendChild(selection);
+}
+
+// Add the event handler.
 document.addEventListener('keydown', keyUpHandler, false);
 
+// Start the user out in the middle of the grid.
 var pos = {
     x: Math.floor(settings.GRID_W / 2)
     , y: Math.floor(settings.GRID_H /2)
 };
-buildGrid('grid', settings);
 newGame();
