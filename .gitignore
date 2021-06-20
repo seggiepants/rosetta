@@ -9,3 +9,6 @@ bin
 .classpath
 .project
 /vb_net/mugwump/mugwump/My Project
+/c++/mugwump_2d/mugwump_2d/mugwump_2d.vcxproj.user
+/c++/mugwump_2d/mugwump_2d/mugwump_2d.vcxproj
+/c++/mugwump_2d/mugwump_2d/mugwump_2d.vcxproj.filters
