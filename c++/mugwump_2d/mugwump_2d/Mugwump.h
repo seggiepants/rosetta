@@ -8,6 +8,8 @@ public:
 	~Mugwump();
 	bool isAt(int x, int y);
 	void Draw(olc::PixelGameEngine* app, olc::vf2d pos, float size);
+	bool getFound() { return this->found; };
+	void setFound(bool value) { this->found = value; };
 private:
 	bool found;
 	int x, y;

@@ -7,7 +7,7 @@
 class Console
 {
 public:
-	Console(std::string& gameTitle, int textSize, int borderWidth, int borderHeight);
+	Console(const std::string gameTitle, int textSize, int borderWidth, int borderHeight);
 	~Console();
 	void Draw(olc::PixelGameEngine* app, std::vector<olc::vi2d>* guesses, int maxGuesses, std::vector<Mugwump*>* mugwumps );
 private:

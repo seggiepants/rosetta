@@ -1,7 +1,7 @@
 #include "Console.h"
 #include <math.h> // floor
 
-Console::Console(std::string& gameTitle, int textSize, int borderWidth, int borderHeight)
+Console::Console(const std::string gameTitle, int textSize, int borderWidth, int borderHeight)
 {
 	/*
 		this->borderWidth = borderWidth
