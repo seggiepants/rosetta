@@ -7,7 +7,7 @@ public:
 	Mugwump(bool found, int x, int y, olc::Pixel color, olc::Pixel eyeColor, olc::Pixel pupilColor, olc::Pixel mouthColor);
 	~Mugwump();
 	bool isAt(int x, int y);
-	void Draw(olc::PixelGameEngine* app, olc::vf2d pos, float size);
+	void Draw(olc::PixelGameEngine* app, olc::vi2d pos, int size);
 	bool getFound() { return this->found; };
 	void setFound(bool value) { this->found = value; };
 private:

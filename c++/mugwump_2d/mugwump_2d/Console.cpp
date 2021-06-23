@@ -1,5 +1,5 @@
+#include "settings.h"
 #include "Console.h"
-#include <math.h> // floor
 
 Console::Console(const std::string gameTitle, int textSize, int borderWidth, int borderHeight)
 {
@@ -49,7 +49,7 @@ void Console::Draw(olc::PixelGameEngine* app, std::vector<olc::vi2d>* guesses, i
 			app->DrawString(x, y, buffer.str());
 			textSize = app->GetTextSize(buffer.str());
 			x += textSize.x * this->textSize;
-			((Mugwump*)*mugwump)->Draw(app, olc::vf2d{ (float) x, (float) y }, 8 * this->textSize); // ZZZ do something with 8.
+			((Mugwump*)*mugwump)->Draw(app, olc::vi2d{ x, y }, FONT_SIZE_PX * this->textSize); 
 			y += textSize.y * this->textSize;
 			i++;
 		}

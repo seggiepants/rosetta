@@ -17,10 +17,10 @@ Mugwump::~Mugwump()
 {
 }
 
-void Mugwump::Draw(olc::PixelGameEngine* app, olc::vf2d pos, float size)
+void Mugwump::Draw(olc::PixelGameEngine* app, olc::vi2d pos, int size)
 {
-	int centerX = int(pos.x + floor(size / 2));
-	int centerY = int(pos.y + floor(size / 2));
+	int centerX = int(pos.x + floor(size / 2.0));
+	int centerY = int(pos.y + floor(size / 2.0));
 	int eyeDx = int(floor(size / 4.0));
 	int eyeDy = int(floor(size / 4.0));
 	
