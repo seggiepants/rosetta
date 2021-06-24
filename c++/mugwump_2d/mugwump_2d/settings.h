@@ -7,6 +7,8 @@ const int COUNT_MUGWUMPS = 4;
 const int MAX_GUESSES = 10;
 const int GRID_W = 10;
 const int GRID_H = 10;
+const int INSET_1 = 4;
+const int INSET_2 = 8;
 const int FONT_SIZE_PX = 8;
 
 static const olc::Pixel BLACK = olc::Pixel(0, 0, 0);

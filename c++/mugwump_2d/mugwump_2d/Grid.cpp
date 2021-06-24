@@ -1,5 +1,6 @@
 #include "settings.h"
 #include "Grid.h"
+#include <algorithm>
 #include <math.h>
 #include <numeric>
 
@@ -20,11 +21,12 @@ Grid::Grid(olc::PixelGameEngine* app, const std::string gameTitle, int width, in
 	this->maxGuesses = maxGuesses;
 	this->mugwumps = new std::vector<Mugwump*>();
 	this->guesses = new std::vector<olc::vi2d>();
-	this->console = new Console(gameTitle, this->textSize, this->borderWidth, this->borderHeight);
+	this->console = new Console(gameTitle, 1, this->borderWidth, this->borderHeight);
 	this->screenWidth = app->ScreenWidth();
 	this->screenHeight = app->ScreenHeight();
-
-	this->cellW = (this->screenWidth - (this->borderWidth * 2)) / this->width;
+	std::string longLine = "Press the Escape key to quit the game.  NN";
+	const olc::vi2d size = app->GetTextSize(longLine);
+	this->cellW = (this->screenWidth - size.x - (this->borderWidth * 3)) / this->width;
 	this->cellH = (this->screenHeight - (this->borderHeight * 3) - (this->textSize * FONT_SIZE_PX)) / this->height;
 	this->cellW = this->cellH = std::min<int>(this->cellW, this->cellH);
 
@@ -175,4 +177,18 @@ void Grid::Draw(olc::PixelGameEngine* app)
 			app->DrawString(textPos, digits, WHITE, this->textSize);
 		}
 	}
+
+	std::for_each(this->guesses->begin(), this->guesses->end(), [app, this](olc::vi2d guess) {
+		app->FillRect(this->x + (this->cellW * guess.x) + INSET_1, this->y + (this->cellH * guess.y) + INSET_1, this->cellW - (2 * INSET_1), this->cellH - (2 * INSET_1), RED);
+	});
+
+	if (this->pos.x >= 0 && this->pos.x < this->width && this->pos.y >= 0 && this->pos.y < this->height)
+	{
+		app->FillRect(this->x + (this->cellW * this->pos.x) + INSET_2, this->y + (this->cellH * this->pos.y) + INSET_2, this->cellW - (2 * INSET_2), this->cellH - (2 * INSET_2), TEAL);
+	}
+
+	std::for_each(this->mugwumps->begin(), this->mugwumps->end(), [app, this](Mugwump* mugwump) {
+		if (mugwump->getFound())
+			mugwump->Draw(app, { this->x + (this->cellW * mugwump->getX()) + 1, this->y + (this->cellH * mugwump->getY()) + 1 }, this->cellW - 2);
+	});
 }

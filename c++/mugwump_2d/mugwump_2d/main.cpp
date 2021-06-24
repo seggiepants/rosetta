@@ -111,7 +111,7 @@ public:
 int main()
 {
 	Mugwump2D game;
-	if (game.Construct(640, 480, 1, 1))
+	if (game.Construct(800, 600, 1, 1))
 		game.Start();
 	return 0;
 }
