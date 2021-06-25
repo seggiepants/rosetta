@@ -21,6 +21,7 @@
 #include "Grid.h"
 #include "Console.h"
 #include "Mugwump.h"
+#include "PlayAgain.h"
 #include "settings.h"
 
 // Override base class with your custom functionality
@@ -29,6 +30,7 @@ class Mugwump2D : public olc::PixelGameEngine
 private:
 	Grid* grid;
 	Console* console;
+	PlayAgain* playAgain;
 	std::vector<olc::vi2d>* guesses;
 	std::string appName;
 	std::vector<Mugwump*>* mugwumps;
@@ -40,6 +42,7 @@ public:
 		this->appName = "Mugwump 2D";
 		this->grid = nullptr;
 		this->console = nullptr;
+		this->playAgain = nullptr;
 		this->guesses = new std::vector<olc::vi2d>();
 		this->mugwumps = new std::vector<Mugwump*>();
 		srand((unsigned int)time(NULL));
@@ -52,6 +55,9 @@ public:
 
 		if (this->console != nullptr)
 			delete this->console;
+
+		if (this->playAgain != nullptr)
+			delete this->playAgain;
 
 		if (this->guesses != nullptr)
 			delete this->guesses;
@@ -77,6 +83,8 @@ public:
 		this->grid = new Grid(this);
 		//console = new Console(this->appName, 1, 8, 8);
 		this->grid->NewGame();
+		this->playAgain = new PlayAgain();
+		this->playAgain->Init(true);
 		return true;
 	}
 
@@ -103,6 +111,8 @@ public:
 		}
 		*/
 		this->grid->Draw(this);
+		this->playAgain->Update(this, fElapsedTime);
+		this->playAgain->Draw(this);
 		return true;
 	}	
 
@@ -111,7 +121,7 @@ public:
 int main()
 {
 	Mugwump2D game;
-	if (game.Construct(800, 600, 1, 1))
+	if (game.Construct(720, 480, 1, 1))
 		game.Start();
 	return 0;
 }

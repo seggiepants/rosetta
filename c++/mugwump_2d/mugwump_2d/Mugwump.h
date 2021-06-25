@@ -10,6 +10,10 @@ public:
 	void Draw(olc::PixelGameEngine* app, olc::vi2d pos, int size);
 	bool getFound() { return this->found; };
 	void setFound(bool value) { this->found = value; };
+	int getX() { return this->x; };
+	void setX(int x) { this->x = x; };
+	int getY() { return this->y; };
+	void setY(int y) { this->y = y; };
 private:
 	bool found;
 	int x, y;

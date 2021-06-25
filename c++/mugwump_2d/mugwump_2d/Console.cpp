@@ -16,7 +16,7 @@ Console::Console(const std::string gameTitle, int textSize, int borderWidth, int
 	*/
 	this->gameTitle = gameTitle;
 	this->textSize = textSize;
-	this->textSizeLarge = textSize + 2;
+	this->textSizeLarge = textSize + 1;
 	this->borderWidth = borderWidth;
 	this->borderHeight = borderHeight;
 }
@@ -33,9 +33,9 @@ void Console::Draw(olc::PixelGameEngine* app, std::vector<olc::vi2d>* guesses, i
 	int x = int(floor(app->ScreenWidth() / 2));
 	std::stringstream buffer;
 	olc::vi2d textSize = app->GetTextSize(this->gameTitle);
-	textSize.x *= this->textSize;
-	textSize.y *= this->textSize;
-	app->DrawString(x - (textSize.x / 2), y, this->gameTitle, olc::WHITE, this->textSize);
+	textSize.x *= this->textSizeLarge;
+	textSize.y *= this->textSizeLarge;
+	app->DrawString(x - (textSize.x / 2), y, this->gameTitle, olc::WHITE, this->textSizeLarge);
 
 	if (guesses->size() > 0)
 	{
