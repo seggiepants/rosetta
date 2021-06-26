@@ -5,22 +5,12 @@
 
 Console::Console(const std::string gameTitle, int textSize, int borderWidth, int borderHeight)
 {
-	/*
-		this->borderWidth = borderWidth
-		this->borderHeight = borderHeight
-		this->gameTitle = gameTitle
-		this->textSize = textSize
-		self.font = pygame.font.Font(pygame.font.match_font('sans'), textSize)
-		self.fontLarge = pygame.font.Font(pygame.font.match_font('sans', True), textSize + 2)
-
-	*/
 	this->gameTitle = gameTitle;
 	this->textSize = textSize;
 	this->textSizeLarge = textSize + 1;
 	this->borderWidth = borderWidth;
 	this->borderHeight = borderHeight;
 }
-
 
 Console::~Console()
 {
@@ -46,7 +36,7 @@ void Console::Draw(olc::PixelGameEngine* app, std::vector<olc::vi2d>* guesses, i
 		for (auto mugwump = mugwumps->begin(); mugwump != mugwumps->end(); ++mugwump)
 		{
 			x = this->borderWidth;			
-			buffer.clear();
+			buffer.str("");
 			buffer << "#" << (i + 1) << " ";
 			app->DrawString(x, y, buffer.str(), WHITE, this->textSize);
 			textSize = app->GetTextSize(buffer.str());
@@ -55,7 +45,7 @@ void Console::Draw(olc::PixelGameEngine* app, std::vector<olc::vi2d>* guesses, i
 			
 			if (((Mugwump*)*mugwump)->getFound())
 			{
-				buffer.str(" FOUND!");
+				buffer.str("  FOUND!");
 			}
 			else
 			{

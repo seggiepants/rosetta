@@ -32,7 +32,6 @@ Grid::Grid(olc::PixelGameEngine* app, const std::string gameTitle, int width, in
 
 	this->x = this->screenWidth - (this->cellW * this->width) - this->borderWidth;
 	this->y = (int)((this->screenHeight - (this->cellH * this->height)) / 2);
-
 }
 
 
@@ -53,7 +52,6 @@ Grid::~Grid()
 		this->guesses->clear();
 		delete this->guesses;
 	}
-
 }
 
 void Grid::Click(int x, int y)
@@ -64,7 +62,7 @@ void Grid::Click(int x, int y)
 	if (gridX > 0 && gridX < this->cellW * this->width && gridY > 0 && gridY < this->cellH * this->height)
 	{
 		int px = (int)(gridX / this->cellW);
-		int py = (int)(gridY / this->cellH);
+		int py = (int)(gridY / this->cellH);		
 		this->pos = { px, py };
 		this->Select();
 	}
@@ -73,7 +71,7 @@ void Grid::Click(int x, int y)
 bool Grid::isGameOver()
 {	
 	int mugwumpsFound = std::accumulate(this->mugwumps->begin(), this->mugwumps->end(), 0, [](int total, Mugwump* mugwump) { return total + (mugwump->getFound() ? 1 : 0); });
-	return (this->guesses->size() <= (size_t)this->maxGuesses) || ((size_t)mugwumpsFound == this->mugwumps->size());
+	return (this->guesses->size() >= (size_t)this->maxGuesses) || ((size_t)mugwumpsFound == this->mugwumps->size());
 }
 
 bool Grid::isGameWon()
@@ -84,8 +82,8 @@ bool Grid::isGameWon()
 
 bool Grid::isGuessOK(int x, int y)
 {
-	auto position = std::find_if(this->mugwumps->begin(), this->mugwumps->end(), [x, y](Mugwump* mugwump) {return mugwump->isAt(x, y); });
-	return (position == this->mugwumps->end());
+	auto position = std::find_if(this->guesses->begin(), this->guesses->end(), [x, y](olc::vi2d guess) {return guess.x == x && guess.y == y; });
+	return (position == this->guesses->end());
 }
 
 void Grid::MoveDown()
@@ -112,6 +110,9 @@ void Grid::NewGame(int numMugwumps)
 {
 	this->guesses->clear();
 	this->mugwumps->clear();
+	this->pos.x = (int)(this->width / 2);
+	this->pos.y = (int)(this->height / 2);
+
 	for (int i = 0; i < numMugwumps; i++)
 	{
 		bool positionOK = false;
@@ -178,14 +179,14 @@ void Grid::Draw(olc::PixelGameEngine* app)
 		}
 	}
 
-	std::for_each(this->guesses->begin(), this->guesses->end(), [app, this](olc::vi2d guess) {
-		app->FillRect(this->x + (this->cellW * guess.x) + INSET_1, this->y + (this->cellH * guess.y) + INSET_1, this->cellW - (2 * INSET_1), this->cellH - (2 * INSET_1), RED);
-	});
-
 	if (this->pos.x >= 0 && this->pos.x < this->width && this->pos.y >= 0 && this->pos.y < this->height)
 	{
-		app->FillRect(this->x + (this->cellW * this->pos.x) + INSET_2, this->y + (this->cellH * this->pos.y) + INSET_2, this->cellW - (2 * INSET_2), this->cellH - (2 * INSET_2), TEAL);
+		app->FillRect(this->x + (this->cellW * this->pos.x) + INSET_1, this->y + (this->cellH * this->pos.y) + INSET_1, this->cellW - (2 * INSET_1), this->cellH - (2 * INSET_1), TEAL);
 	}
+
+	std::for_each(this->guesses->begin(), this->guesses->end(), [app, this](olc::vi2d guess) {
+		app->FillRect(this->x + (this->cellW * guess.x) + INSET_2, this->y + (this->cellH * guess.y) + INSET_2, this->cellW - (2 * INSET_2), this->cellH - (2 * INSET_2), RED);
+	});
 
 	std::for_each(this->mugwumps->begin(), this->mugwumps->end(), [app, this](Mugwump* mugwump) {
 		if (mugwump->getFound())

@@ -1,5 +1,5 @@
 #include <math.h>
-#include "Mugwump.h" // floor
+#include "Mugwump.h"
 
 Mugwump::Mugwump(bool found, int x, int y, olc::Pixel color, olc::Pixel eyeColor, olc::Pixel pupilColor, olc::Pixel mouthColor)
 {
@@ -11,7 +11,6 @@ Mugwump::Mugwump(bool found, int x, int y, olc::Pixel color, olc::Pixel eyeColor
 	this->pupilColor = pupilColor;
 	this->mouthColor = mouthColor;
 }
-
 
 Mugwump::~Mugwump()
 {

@@ -19,8 +19,6 @@
 #include <time.h>
 #include <vector>
 #include "Grid.h"
-#include "Console.h"
-#include "Mugwump.h"
 #include "PlayAgain.h"
 #include "settings.h"
 
@@ -29,22 +27,19 @@ class Mugwump2D : public olc::PixelGameEngine
 {
 private:
 	Grid* grid;
-	Console* console;
 	PlayAgain* playAgain;
 	std::vector<olc::vi2d>* guesses;
 	std::string appName;
-	std::vector<Mugwump*>* mugwumps;
+	bool exitGame;
 
 public:
 	Mugwump2D()
 	{
 		// Name your application
-		this->appName = "Mugwump 2D";
+		sAppName = DEFAULT_TITLE;
 		this->grid = nullptr;
-		this->console = nullptr;
 		this->playAgain = nullptr;
 		this->guesses = new std::vector<olc::vi2d>();
-		this->mugwumps = new std::vector<Mugwump*>();
 		srand((unsigned int)time(NULL));
 	}
 
@@ -53,69 +48,94 @@ public:
 		if (this->grid != nullptr)
 			delete this->grid;
 
-		if (this->console != nullptr)
-			delete this->console;
-
 		if (this->playAgain != nullptr)
 			delete this->playAgain;
 
 		if (this->guesses != nullptr)
 			delete this->guesses;
-
-		if (this->mugwumps != nullptr)
-		{
-			for(auto iter = this->mugwumps->begin(); iter != this->mugwumps->end(); ++iter)
-			{
-				delete *iter;
-			}
-			this->mugwumps->clear();
-			delete this->mugwumps;
-		}
 	}
-
-	
-
 
 public:
 	bool OnUserCreate() override
 	{
 		// Called once at the start, so create things here		
 		this->grid = new Grid(this);
-		//console = new Console(this->appName, 1, 8, 8);
 		this->grid->NewGame();
 		this->playAgain = new PlayAgain();
 		this->playAgain->Init(true);
+		this->exitGame = false;
 		return true;
 	}
 
 	bool OnUserUpdate(float fElapsedTime) override
 	{
-		// Called once per frame, draws random coloured pixels
-		/*for (int x = 0; x < ScreenWidth(); x++)
-			for (int y = 0; y < ScreenHeight(); y++)
-				Draw(x, y, olc::Pixel(rand() % 256, rand() % 256, rand() % 256));
-		*/
 		Clear(olc::BLACK);
 
-		/*
-		DrawLine(0, 0, ScreenWidth() - 1, ScreenHeight() - 1, olc::WHITE);
-		DrawLine(ScreenWidth() - 1, 0, 0, ScreenHeight() - 1, olc::WHITE);		
-		Mugwump* thing = *this->mugwumps->begin();
-		thing->Draw(this, olc::vf2d{ 320 - 50, 240 - 50 }, 100);
-		this->console->Draw(this, this->guesses, MAX_GUESSES, this->mugwumps);
-		*/
-		/*
-		for (int i = 1; i <= 10; i++)
+		if (this->grid->isGameOver() == false)
 		{
-			DrawString(0, i * 12, "Mugwump 2D", olc::WHITE, i);
-		}
-		*/
-		this->grid->Draw(this);
-		this->playAgain->Update(this, fElapsedTime);
-		this->playAgain->Draw(this);
-		return true;
-	}	
+			// Process input if still playing.
+			if (this->GetKey(olc::ESCAPE).bReleased)
+			{
+				this->exitGame = true;
+			}
 
+			if (this->GetKey(olc::DOWN).bReleased || this->GetKey(olc::S).bReleased)
+			{
+				this->grid->MoveDown();
+			}
+
+			if (this->GetKey(olc::LEFT).bReleased || this->GetKey(olc::A).bReleased)
+			{
+				this->grid->MoveLeft();
+			}
+
+			if (this->GetKey(olc::RIGHT).bReleased || this->GetKey(olc::D).bReleased)
+			{
+				this->grid->MoveRight();
+			}
+
+			if (this->GetKey(olc::UP).bReleased || this->GetKey(olc::W).bReleased)
+			{
+				this->grid->MoveUp();
+			}
+
+			if (this->GetKey(olc::SPACE).bReleased || this->GetKey(olc::RETURN).bReleased || this->GetKey(olc::ENTER).bReleased)
+			{
+				this->grid->Select();
+			}
+
+			if (this->GetMouse(0).bReleased)
+			{
+				int mouseX = this->GetMouseX();
+				int mouseY = this->GetMouseY();
+				this->grid->Click(mouseX, mouseY);
+			}
+
+			if (this->grid->isGameOver())
+			{
+				this->playAgain->Init(this->grid->isGameWon());
+			}
+		}
+
+		this->grid->Draw(this);
+		if (this->grid->isGameOver())
+		{
+			this->playAgain->Update(this, fElapsedTime);
+			this->playAgain->Draw(this);
+			if (this->playAgain->Ready())
+			{
+				if (this->playAgain->Replay())
+				{
+					grid->NewGame();
+				}
+				else
+				{
+					this->exitGame = true;
+				}
+			}
+		}
+		return this->exitGame == false;
+	}	
 };
 
 int main()

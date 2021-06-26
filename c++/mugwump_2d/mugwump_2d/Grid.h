@@ -18,7 +18,6 @@ const std::string DEFAULT_TITLE = "MUGWUMP 2D";
 class Grid
 {
 public:
-	// gameTitle = GAME_TITLE, width = GRID_W, height = GRID_H, maxGuesses = MAX_GUESSES, textSize = TEXT_SIZE, screenWidth = SCREEN_W, screenHeight = SCREEN_H, borderWidth = BORDER_W, borderHeight = BORDER_H
 	Grid(olc::PixelGameEngine* app, const std::string gameTitle = DEFAULT_TITLE, int width = DEFAULT_GRID_W, int height = DEFAULT_GRID_H, int maxGuesses = DEFAULT_MAX_GUESSES, int textSize = DEFAULT_TEXT_SIZE, int borderWidth = DEFAULT_BORDER_W, int borderHeight = DEFAULT_BORDER_H);
 	~Grid();
 	void Click(int x, int y);
@@ -51,4 +50,3 @@ private:
 	std::vector<Mugwump*>* mugwumps;
 	std::vector<olc::Pixel> body_colors;
 };
-

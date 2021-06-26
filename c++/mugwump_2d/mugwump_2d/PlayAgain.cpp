@@ -6,7 +6,6 @@ PlayAgain::PlayAgain()
 	this->Init(false);
 }
 
-
 PlayAgain::~PlayAgain()
 {
 }
@@ -94,13 +93,11 @@ void PlayAgain::Update(olc::PixelGameEngine* app, float fElapsedTime)
 	{
 		this->hasSelection = true;
 		this->playAgain = true;
-		std::cout << "Yes clicked";
 	}
 	
 	if (keyNo || mouseNo)
 	{
 		this->hasSelection = true;
 		this->playAgain = false;
-		std::cout << "No clicked";
 	}
 }
