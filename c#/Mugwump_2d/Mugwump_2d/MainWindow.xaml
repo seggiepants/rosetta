@@ -17,12 +17,12 @@
         </Grid.RowDefinitions>
         <Label x:Name="lblTitle" Grid.ColumnSpan="2" FontWeight="Bold" FontFamily="Arial Black" FontSize="18" HorizontalAlignment="Center">Mugwump 2D</Label>
 
-        <TextBlock Grid.Row="1">Find all the Mugwumps to win! <LineBreak/>
+        <TextBlock Grid.Row="1" Margin="16,0,16,0">Find all the Mugwumps to win! <LineBreak/>
             Select a square to scan for a Mugwump. <LineBreak/>
             Use the arrow keys to move. <LineBreak/>
             Space bar will select a square. <LineBreak/>
             You can also use the mouse. <LineBreak/>
             Press the Escape key to quite the game.</TextBlock>
-        <DataGrid Grid.Row="1" Grid.Column="1" />
+        <Canvas x:Name="cnvGrid" Grid.Row="1" Grid.Column="1" SizeChanged="cnvGrid_SizeChanged" />
     </Grid>
 </Window>

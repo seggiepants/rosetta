@@ -20,9 +20,16 @@ namespace Mugwump_2d
     /// </summary>
     public partial class MainWindow : Window
     {
+        Mugwump_2d.Grid grid;
         public MainWindow()
         {
             InitializeComponent();
+            this.grid = new Mugwump_2d.Grid(cnvGrid, Settings.MAX_GUESSES, Settings.FONT_SIZE_PX, Settings.INSET_1, Settings.INSET_1);
+        }
+
+        private void cnvGrid_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            this.grid.Resize();
         }
     }
 }
