@@ -29,7 +29,7 @@ namespace Mugwump_2d
 
         private void cnvGrid_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            this.grid.Resize();
+            this.grid.Draw();
         }
     }
 }
