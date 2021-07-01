@@ -23,6 +23,6 @@
             Space bar will select a square. <LineBreak/>
             You can also use the mouse. <LineBreak/>
             Press the Escape key to quite the game.</TextBlock>
-        <Canvas x:Name="cnvGrid" Grid.Row="1" Grid.Column="1" SizeChanged="cnvGrid_SizeChanged" />
+        <Canvas x:Name="cnvGrid" Grid.Row="1" Grid.Column="1" SizeChanged="cnvGrid_SizeChanged" KeyUp="cnvGrid_KeyUp" Focusable="True" />
     </Grid>
 </Window>

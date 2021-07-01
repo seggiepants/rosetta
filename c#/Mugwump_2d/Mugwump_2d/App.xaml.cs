@@ -15,6 +15,8 @@ namespace Mugwump_2d
     {
         public static void Circle(Canvas canvas, int x, int y, int radius, Color color)
         {
+            if (radius <= 0)
+                return;
             Ellipse circle = new Ellipse();
             circle.Fill = CreateBrush(color);
             circle.Width = radius * 2;
@@ -26,6 +28,8 @@ namespace Mugwump_2d
 
         public static void Rectangle(Canvas canvas, int x, int y, int w, int h, Color color)
         {
+            if (w <= 0 || h <= 0)
+                return;
             Rectangle rect = new Rectangle();
             rect.Fill = CreateBrush(color);
             rect.Width = w;

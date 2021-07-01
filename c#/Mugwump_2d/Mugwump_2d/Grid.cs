@@ -23,6 +23,8 @@ namespace Mugwump_2d
 		int textSize;
 		int width;
 		Point pos;
+		int x;
+		int y;
 
 		public Grid(Canvas app, int maxGuesses, int textSize, int borderWidth, int borderHeight)
 		{
@@ -72,8 +74,7 @@ namespace Mugwump_2d
 			this.cellH = (this.height - (this.borderHeight * 3) - tick_height) / Settings.GRID_H;
 			this.cellW = this.cellH = Math.Min(this.cellW, this.cellH);
 
-			this.pos.X = (int)(Settings.GRID_W / 2);
-			this.pos.Y = (int)(Settings.GRID_H / 2);
+			this.NewGame(Settings.COUNT_MUGWUMPS);
 		}		
 
 		public void Draw()
@@ -84,6 +85,9 @@ namespace Mugwump_2d
 
 			this.width = (int)this.surface.ActualWidth;
 			this.height = (int)this.surface.ActualHeight;
+			if (this.width <= 0 || this.height <= 0)
+				return;
+
 			h_ticks = new List<TextBlock>();
 			v_ticks = new List<TextBlock>();
 			int tick_width = 0;
@@ -111,6 +115,8 @@ namespace Mugwump_2d
 
 			int x = (this.width - tick_width - (this.borderWidth * 3) - (this.cellW * Settings.GRID_W)) / 2;
 			int y = (this.height - tick_height - (this.borderHeight * 3) - (this.cellH * Settings.GRID_H)) / 2;
+			this.x = x;
+			this.y = y;
 
 			for (int i = 0; i <= Settings.GRID_H; ++i)
 			{
@@ -169,170 +175,164 @@ namespace Mugwump_2d
                 }
 			}
 
+			/*
 			Mugwump test = new Mugwump(1, 1, true, Settings.VIOLET, Settings.WHITE, Settings.RED, Settings.BLACK);
 			test.Draw(this.surface, 100, 100, 100);
+			*/
 		}
 
 
-		/*
-Grid::~Grid()
-{
-	if (this->mugwumps != nullptr)
-	{
-		for (auto iter = this->mugwumps->begin(); iter != this->mugwumps->end(); ++iter)
-		{
-			delete *iter;
-		}
-		this->mugwumps->clear();
-		delete this->mugwumps;
-	}
+		~Grid()
+        {
 
-	if (this->guesses != nullptr)	
-	{
-		this->guesses->clear();
-		delete this->guesses;
-	}
-}
-		*/
-		/*
+			if (this.mugwumps.Count > 0)
+			{
+				this.mugwumps.Clear();
+			}
+
+			if (this.guesses.Count > 0)	
+			{
+				this.guesses.Clear();
+			}
+		}
 		void Click(int x, int y)
 		{
-			bool isGridLine = ((x % this->cellW == 0) || (y % this->cellH == 0));
-			if (gridX > 0 && gridX < this->cellW * this->width && gridY > 0 && gridY < this->cellH * this->height)
+			int gridX = x - this.x;
+			int gridY = y - this.y;
+			bool isGridLine = ((gridX % this.cellW == 0) || (gridY % this.cellH == 0));
+			if (gridX > 0 && gridX < this.cellW * Settings.GRID_W && gridY > 0 && gridY < this.cellH * Settings.GRID_H)
 			{
-				int px = (int)(gridX / this->cellW);
-				int py = (int)(gridY / this->cellH);		
-				this->pos = { px, py };
-				this->Select();
+				int px = (int)(gridX / this.cellW);
+				int py = (int)(gridY / this.cellH);
+				this.pos.X = px;
+				this.pos.Y = py; 
+				this.Select();
 			}
 		}
 
-bool Grid::isGameOver()
-{	
-	int mugwumpsFound = std::accumulate(this->mugwumps->begin(), this->mugwumps->end(), 0, [](int total, Mugwump* mugwump) { return total + (mugwump->getFound() ? 1 : 0); });
-	return (this->guesses->size() >= (size_t)this->maxGuesses) || ((size_t)mugwumpsFound == this->mugwumps->size());
-}
+		private int MugwumpsFound
+        {
+			get
+            {
+				int mugwumpsFound = 0;
+				foreach (Mugwump mugwump in this.mugwumps)
+				{
+					if (mugwump.found)
+					{
+						mugwumpsFound++;
+					}
+				}
+				return mugwumpsFound;
+			}
+        }
 
-bool Grid::isGameWon()
-{
-	int mugwumpsFound = std::accumulate(this->mugwumps->begin(), this->mugwumps->end(), 0, [](int total, Mugwump* mugwump) { return total + (mugwump->getFound() ? 1 : 0); });
-	return (this->guesses->size() <= (size_t)this->maxGuesses) && ((size_t)mugwumpsFound == this->mugwumps->size());
-}
+		private int FindMugwumpAt(int x, int y)
+        {
+			for (int i = 0; i < this.mugwumps.Count; ++i)
+			{
+				if (this.mugwumps[i].isAt(x, y))
+				{
+					return i;
+				}
+			}
+			return -1;
+        }
 
-bool Grid::isGuessOK(int x, int y)
-{
-	auto position = std::find_if(this->guesses->begin(), this->guesses->end(), [x, y](olc::vi2d guess) {return guess.x == x && guess.y == y; });
-	return (position == this->guesses->end());
-}
-
-void Grid::MoveDown()
-{
-	this->pos.y = std::min<int>(this->height - 1, this->pos.y + 1);
-}
-
-void Grid::MoveLeft()
-{
-	this->pos.x = std::max<int>(0, this->pos.x - 1);
-}
-
-void Grid::MoveRight()
-{
-	this->pos.x = std::min<int>(this->width - 1, this->pos.x + 1);
-}
-
-void Grid::MoveUp()
-{
-	this->pos.y = std::max<int>(0, this->pos.y - 1);
-}
-
-void Grid::NewGame(int numMugwumps)
-{
-	this->guesses->clear();
-	this->mugwumps->clear();
-	this->pos.x = (int)(this->width / 2);
-	this->pos.y = (int)(this->height / 2);
-
-	for (int i = 0; i < numMugwumps; i++)
-	{
-		bool positionOK = false;
-		int x = 0;
-		int y = 0;
-		olc::Pixel color;
-
-		while (!positionOK)
+		bool isGameOver()
 		{
-			x = rand() % 10; // ZZZ fix with grid size
-			y = rand() % 10; // ZZZ fix with grid size
-			color = body_colors[i % body_colors.size()];
-			auto position = std::find_if(this->mugwumps->begin(), this->mugwumps->end(), [x, y](Mugwump* mugwump) {return mugwump->isAt(x, y); });
-			positionOK = (position == this->mugwumps->end());
+			int mugwumpsFound = MugwumpsFound;
+			return (this.guesses.Count >= this.maxGuesses) || (mugwumpsFound == this.mugwumps.Count);
 		}
-		this->mugwumps->push_back(new Mugwump(false, x, y, color, WHITE, BLACK, BLACK));
-	}
-}
 
-void Grid::Select()
-{
-	int x = this->pos.x;
-	int y = this->pos.y;
-	if (this->isGuessOK(x, y))
-	{
-		this->guesses->push_back({ x, y });
-		auto position = std::find_if(this->mugwumps->begin(), this->mugwumps->end(), [x, y](Mugwump* mugwump) {return mugwump->isAt(x, y); });
-		if (position != this->mugwumps->end())
-			(*position)->setFound(true);
-	}
-}
-
-void Grid::Draw(olc::PixelGameEngine* app)
-{
-	this->console->Draw(app, this->guesses, this->maxGuesses, this->mugwumps);
-	int i;
-	std::stringstream buffer;
-	std::string digits;
-	olc::vi2d textPos;
-	
-	for (i = 0; i <= this->height; ++i)
-	{
-		app->DrawLine(this->x, this->y + (this->cellH * i), this->x + (this->cellW * this->width) , this->y + (this->cellH * i), WHITE);
-		if (i < this->height)
+		bool isGameWon()
 		{
-			buffer.str("");
-			buffer << i;
-			digits = buffer.str();
-			textPos = { this->x - (this->textSize * FONT_SIZE_PX * (int)digits.length()) - this->borderWidth, this->y + ((this->height - i) * this->cellH) - (int)(this->cellH / 2) - ((FONT_SIZE_PX * this->textSize) / 2) };
-			app->DrawString(textPos, digits, WHITE, this->textSize);
+			int mugwumpsFound = MugwumpsFound;
+			return (this.guesses.Count <= this.maxGuesses) && (mugwumpsFound == this.mugwumps.Count);
 		}
-	}
 
-	for (i = 0; i <= this->width; ++i)
-	{
-		app->DrawLine(this->x + (this->cellW * i), this->y, this->x + (this->cellW * i), this->y + (this->cellH * this->height), WHITE);
-		if (i < this->width)
+		bool isGuessOK(int x, int y)
 		{
-			buffer.str("");
-			buffer << i;
-			digits = buffer.str();
-			textPos = { this->x + (int)(this->cellW / 2) + (i * this->cellW) - ((this->textSize * (int)digits.length() * FONT_SIZE_PX) / 2), this->y + (this->height * this->cellH) + this->borderHeight };
-			app->DrawString(textPos, digits, WHITE, this->textSize);
+			bool matchFound = false;
+			foreach (Point guess in this.guesses)
+			{
+				if (guess.X == x && guess.Y == y)
+				{
+					matchFound = true;
+					break;
+				}
+			}
+			return !matchFound;
 		}
-	}
 
-	if (this->pos.x >= 0 && this->pos.x < this->width && this->pos.y >= 0 && this->pos.y < this->height)
-	{
-		app->FillRect(this->x + (this->cellW * this->pos.x) + INSET_1, this->y + (this->cellH * this->pos.y) + INSET_1, this->cellW - (2 * INSET_1), this->cellH - (2 * INSET_1), TEAL);
-	}
+		public void MoveDown()
+		{
+			this.pos.Y = Math.Min(Settings.GRID_H - 1, this.pos.Y + 1);
+			this.Draw();
+		}
 
-	std::for_each(this->guesses->begin(), this->guesses->end(), [app, this](olc::vi2d guess) {
-		app->FillRect(this->x + (this->cellW * guess.x) + INSET_2, this->y + (this->cellH * guess.y) + INSET_2, this->cellW - (2 * INSET_2), this->cellH - (2 * INSET_2), RED);
-	});
+		public void MoveLeft()
+		{
+			this.pos.X = Math.Max(0, this.pos.X - 1);
+			this.Draw();
+		}
 
-	std::for_each(this->mugwumps->begin(), this->mugwumps->end(), [app, this](Mugwump* mugwump) {
-		if (mugwump->getFound())
-			mugwump->Draw(app, { this->x + (this->cellW * mugwump->getX()) + 1, this->y + (this->cellH * mugwump->getY()) + 1 }, this->cellW - 2);
-	});
-}
+		public void MoveRight()
+		{
+			this.pos.X = Math.Min(Settings.GRID_W - 1, this.pos.X + 1);
+			this.Draw();
+		}
 
-         * */
+		public void MoveUp()
+		{
+			this.pos.Y = Math.Max(0, this.pos.Y - 1);
+			this.Draw();
+		}
+
+		public void NewGame(int numMugwumps)
+		{
+			Random rnd = new Random();
+			this.guesses.Clear();
+			this.mugwumps.Clear();
+			this.pos.X = (int)(Settings.GRID_W / 2);
+			this.pos.Y = (int)(Settings.GRID_H / 2);
+
+			for (int i = 0; i < numMugwumps; i++)
+			{
+				bool positionOK = false;
+				int x = 0;
+				int y = 0;
+				System.Windows.Media.Color color;
+
+				while (!positionOK)
+				{
+					x = rnd.Next(0, Settings.GRID_W);
+					y = rnd.Next(0, Settings.GRID_H);
+					color = body_colors[i % body_colors.Count];
+					positionOK = true;
+					int mugwumpIDX = this.FindMugwumpAt(x, y);
+					positionOK = (mugwumpIDX < 0);
+				}
+				this.mugwumps.Add(new Mugwump(x, y, false, color, Settings.WHITE, Settings.BLACK, Settings.BLACK));
+			}
+			this.pos.X = (int)(Settings.GRID_W / 2);
+			this.pos.Y = (int)(Settings.GRID_H / 2);
+			this.Draw();
+		}
+
+		public void Select()
+		{
+			int x = this.pos.X;
+			int y = this.pos.Y;
+			if (this.isGuessOK(this.pos.X, this.pos.Y))
+			{
+				this.guesses.Add(new Point(this.pos.X, this.pos.Y));
+				int mugwumpIDX = FindMugwumpAt(this.pos.X, this.pos.Y);
+				if (mugwumpIDX >= 0)
+                {
+					this.mugwumps[mugwumpIDX].found = true;
+                }
+				this.Draw();
+			}
+		}
 	}
 }
