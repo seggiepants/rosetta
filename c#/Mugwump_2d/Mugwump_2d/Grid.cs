@@ -210,6 +210,14 @@ namespace Mugwump_2d
 			}
 		}
 
+		public int GuessCount
+        {
+			get
+            {
+				return this.guesses.Count;
+            }
+        }
+
 		private int MugwumpsFound
         {
 			get
@@ -224,6 +232,22 @@ namespace Mugwump_2d
 				}
 				return mugwumpsFound;
 			}
+        }
+
+		public List<Point> Guesses
+        {
+			get
+            {
+				return this.guesses;
+            }
+        }
+
+		public List<Mugwump> Mugwumps
+        {
+			get
+            {
+				return this.mugwumps;
+            }
         }
 
 		private int FindMugwumpAt(int x, int y)

@@ -59,7 +59,7 @@ namespace Mugwump_2d
         public const int GRID_H = 10;
         public const int INSET_1 = 4;
         public const int INSET_2 = 8;
-        public const int FONT_SIZE_PX = 8;
+        public const int FONT_SIZE_PX = 12;
 
         public static Color BLACK = Color.FromRgb(0, 0, 0);
         public static Color DARK_GRAY = Color.FromRgb(64, 64, 64);
