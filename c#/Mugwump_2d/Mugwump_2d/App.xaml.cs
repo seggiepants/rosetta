@@ -17,31 +17,50 @@ namespace Mugwump_2d
         {
             if (radius <= 0)
                 return;
-            Ellipse circle = new Ellipse();
-            circle.Fill = CreateBrush(color);
-            circle.Width = radius * 2;
-            circle.Height = radius * 2;
+            Ellipse circle = new Ellipse
+            {
+                Fill = CreateBrush(color),
+                Width = radius * 2,
+                Height = radius * 2
+            };
             Canvas.SetLeft(circle, x - radius);
             Canvas.SetTop(circle, y - radius);
             canvas.Children.Add(circle);
+        }
+
+        public static void Circle(Canvas canvas, int x, int y, int radius, System.Drawing.Color color)
+        {
+            Circle(canvas, x, y, radius, AdaptColor(color));
         }
 
         public static void Rectangle(Canvas canvas, int x, int y, int w, int h, Color color)
         {
             if (w <= 0 || h <= 0)
                 return;
-            Rectangle rect = new Rectangle();
-            rect.Fill = CreateBrush(color);
-            rect.Width = w;
-            rect.Height = h;
+            Rectangle rect = new Rectangle
+            {
+                Fill = CreateBrush(color),
+                Width = w,
+                Height = h
+            };
             Canvas.SetLeft(rect, x);
             Canvas.SetTop(rect, y);
             canvas.Children.Add(rect);
         }
 
+        public static void Rectangle(Canvas canvas, int x, int y, int w, int h, System.Drawing.Color color)
+        {
+            Rectangle(canvas, x, y, w, h, AdaptColor(color));
+        }
+
+        private static System.Windows.Media.Color AdaptColor(System.Drawing.Color color)
+        {
+            return System.Windows.Media.Color.FromArgb(color.A, color.R, color.G, color.B);
+        }
+
         public static SolidColorBrush CreateBrush(System.Drawing.Color clr)
         {
-            return new SolidColorBrush(System.Windows.Media.Color.FromArgb(clr.A, clr.R, clr.G, clr.B));
+            return new SolidColorBrush(AdaptColor(clr));
         }
 
         public static SolidColorBrush CreateBrush(System.Windows.Media.Color clr)

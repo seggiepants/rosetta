@@ -12,7 +12,7 @@
             <ColumnDefinition x:Name="Grid" Width="*"></ColumnDefinition>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition x:Name="Title" Height="Auto"></RowDefinition>
+            <RowDefinition x:Name="TitleBar" Height="Auto"></RowDefinition>
             <RowDefinition x:Name="Data" Height="*"></RowDefinition>
         </Grid.RowDefinitions>
         <Label x:Name="lblTitle" Grid.ColumnSpan="2" FontWeight="Bold" FontFamily="Arial Black" FontSize="18" HorizontalAlignment="Center">Mugwump 2D</Label>
@@ -31,6 +31,6 @@
             You can also use the mouse. <LineBreak/>
             Press the Escape key to quite the game.</TextBlock>
         </Grid>
-        <Canvas x:Name="cnvGrid" Grid.Row="1" Grid.Column="1" SizeChanged="cnvGrid_SizeChanged" KeyUp="cnvGrid_KeyUp" Focusable="True" />
+        <Canvas x:Name="cnvGrid" Grid.Row="1" Grid.Column="1" SizeChanged="CnvGrid_SizeChanged" KeyUp="CnvGrid_KeyUp" Focusable="True" MouseLeftButtonUp="CnvGrid_MouseLeftButtonUp" />
     </Grid>
 </Window>
