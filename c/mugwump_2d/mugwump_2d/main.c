@@ -12,7 +12,7 @@
 // --------------------------------------------------------------------------------
 //
 #include "raylib.h"
-#include "Mugwump.h"
+#include "Grid.h"
 
 int main(void)
 {
@@ -21,10 +21,12 @@ int main(void)
     const int screenWidth = 800;
     const int screenHeight = 450;
 
-    Mugwump mugwump;
-    Mugwump_Init(&mugwump, true, 0, 0, LIME, WHITE, DARKBLUE, BLACK);
-
     InitWindow(screenWidth, screenHeight, "raylib [core] example - basic window");
+
+    Font f = GetFontDefault();
+    Grid grid;
+    Grid_Init(&grid, "MUGWUMP_2D", 10, 10, 10, 12, 4, 4);
+    Grid_NewGame(&grid, 4);
 
     SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
     //--------------------------------------------------------------------------------------
@@ -41,10 +43,11 @@ int main(void)
         //----------------------------------------------------------------------------------
         BeginDrawing();
 
-            ClearBackground(RAYWHITE);
+            ClearBackground(BLACK);
 
-            DrawText("Congrats! You created your first window!", 190, 200, 20, LIGHTGRAY);
-            Mugwump_Draw(&mugwump, 100, 100, 50);
+            //DrawText("Congrats! You created your first window!", 190, 200, 20, LIGHTGRAY);
+            //Mugwump_Draw(&mugwump, 100, 100, 50);
+            Grid_Draw(&grid);
 
         EndDrawing();
         //----------------------------------------------------------------------------------

@@ -4,6 +4,9 @@
 #define __SETTINGS_H__
 #include "raylib.h"
 
+#define MAX(a,b) ((a) > (b) ? (a) : (b))
+#define MIN(a,b) ((a) < (b) ? (a) : (b))
+
 const char* GAME_TITLE = "MUGWUMP 2D";
 const int COUNT_MUGWUMPS = 4;
 const int MAX_GUESSES = 10;
@@ -11,7 +14,7 @@ const int GRID_W = 10;
 const int GRID_H = 10;
 const int INSET_1 = 4;
 const int INSET_2 = 8;
-const int FONT_SIZE_PX = 8;
+const int FONT_SIZE_PX = 12;
 
 static const Color CLR_BLACK = { 0, 0, 0, 255 };
 static const Color CLR_DARK_GRAY = { 64, 64, 64, 255 };
