@@ -4,15 +4,14 @@
 #include "Grid.h"
 
 #define NUM_COLORS 4
-#define BUFFER_MAX 255
 
-int Grid_Init(Grid* grid, char* gameTitle, int width, int height, int maxGuesses, int textSize, int borderWidth, int borderHeight)
+void Grid_Init(Grid* grid, char* gameTitle, int width, int height, int maxGuesses, int textSize, int borderWidth, int borderHeight)
 {
 
 	if ((void*)(grid->body_colors = (Color*)malloc(sizeof(Color) * NUM_COLORS)) == NULL)
 	{
 		perror("Unable to allocate memory - body colors.");
-		return -1;
+		exit(1);
 	}
 	grid->body_colors[0] = CLR_PINK;
 	grid->body_colors[1] = CLR_VIOLET;
@@ -29,25 +28,26 @@ int Grid_Init(Grid* grid, char* gameTitle, int width, int height, int maxGuesses
 	if ((void *)(grid->mugwumps = (Mugwump*)malloc(sizeof(Mugwump) * grid->maxMugwumps)) == NULL)
 	{
 		perror("Unable to allocate memory - Mugwumps.");
-		return -1;
+		exit(1);
 	}
 	if ((void*)(grid->guesses = (Vector2*)malloc(sizeof(Vector2) * grid->maxGuesses)) == NULL)
 	{
 		perror("Unable to allocate memory - Guesses.");
-		return -1;
+		exit(1);
 	}
-	// grid->console = new Console(gameTitle, 1, grid->borderWidth, grid->borderHeight);
+	
+	Status_Init(&grid->status, gameTitle, grid->textSize, grid->textSize + 2, borderWidth, borderHeight);
+	Vector2 titleSize = MeasureTextEx(GetFontDefault(), gameTitle, (float)grid->status.fontSizeLarge, 1.0);
 	grid->screenWidth = GetScreenWidth();
 	grid->screenHeight = GetScreenHeight();
 	Vector2 size = MeasureTextEx(GetFontDefault(), "Press the Escape key to quit the game.  NN", (float) grid->textSize, 1.0);
 	grid->cellW = (int)((grid->screenWidth - size.x - (grid->borderWidth * 3)) / grid->width);
-	grid->cellH = (int)((grid->screenHeight - (grid->borderHeight * 3) - size.y) / grid->height);
+	grid->cellH = (int)((grid->screenHeight - titleSize.y - (grid->borderHeight * 4) - size.y) / grid->height);
 	grid->cellW = grid->cellH = MIN(grid->cellW, grid->cellH);
-
+	
 	grid->x = grid->screenWidth - (grid->cellW * grid->width) - grid->borderWidth;
-	grid->y = (int)((grid->screenHeight - (grid->cellH * grid->height)) / 2);
-
-	return 0;
+	grid->y = (int)((grid->screenHeight - titleSize.y - (grid->borderHeight * 4) - (grid->cellH * grid->height)) / 2);
+	grid->y += ((int)titleSize.y + (2 * grid->borderHeight));
 }
 
 void Grid_Destroy(Grid* grid)
@@ -83,7 +83,7 @@ void Grid_Click(Grid* grid, int x, int y)
 
 void Grid_Draw(Grid* grid)
 {
-	//this->console->Draw(app, this->guesses, this->maxGuesses, this->mugwumps);
+	Status_Draw(&grid->status, grid->countGuesses, grid->maxGuesses, grid->guesses,grid->countMugwumps,  grid->mugwumps);
 	int i;
 	char buffer[BUFFER_MAX];
 	Vector2 textPos, textSize;
@@ -131,10 +131,10 @@ void Grid_Draw(Grid* grid)
 
 	for (i = 0; i < grid->countMugwumps; ++i)
 	{
-		//if (Mugwump_getFound(&grid->mugwumps[i]))
-		//{
+		if (Mugwump_getFound(&grid->mugwumps[i]))
+		{
 			Mugwump_Draw(&grid->mugwumps[i], grid->x + (grid->cellW * Mugwump_getX(&grid->mugwumps[i])) + 1, grid->y + (grid->cellH * Mugwump_getY(&grid->mugwumps[i])) + 1, grid->cellW - 2);
-		//}
+		}
 	}
 }
 

@@ -7,14 +7,19 @@
 #define MAX(a,b) ((a) > (b) ? (a) : (b))
 #define MIN(a,b) ((a) < (b) ? (a) : (b))
 
-const char* GAME_TITLE = "MUGWUMP 2D";
-const int COUNT_MUGWUMPS = 4;
-const int MAX_GUESSES = 10;
-const int GRID_W = 10;
-const int GRID_H = 10;
-const int INSET_1 = 4;
-const int INSET_2 = 8;
-const int FONT_SIZE_PX = 12;
+#define BUFFER_MAX 255
+
+#define SCREEN_WIDTH 800
+#define SCREEN_HEIGHT 450
+
+#define GAME_TITLE "MUGWUMP 2D"
+#define COUNT_MUGWUMPS 4
+#define MAX_GUESSES 10
+#define GRID_W 10
+#define GRID_H 10
+#define INSET_1 4
+#define INSET_2 8
+#define FONT_SIZE 12
 
 static const Color CLR_BLACK = { 0, 0, 0, 255 };
 static const Color CLR_DARK_GRAY = { 64, 64, 64, 255 };

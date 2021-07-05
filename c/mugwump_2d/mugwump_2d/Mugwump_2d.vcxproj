@@ -71,6 +71,7 @@
     <IntDir>obj\x64\Debug\</IntDir>
     <TargetName>Mugwump_2d</TargetName>
     <TargetExt>.exe</TargetExt>
+    <IncludePath>C:\Users\Stewart\Documents\code\rosetta\c\mugwump_2d\3rd_party\raygui\src;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug.DLL|x64'">
     <LinkIncremental>true</LinkIncremental>
@@ -78,6 +79,7 @@
     <IntDir>obj\x64\Debug.DLL\</IntDir>
     <TargetName>Mugwump_2d</TargetName>
     <TargetExt>.exe</TargetExt>
+    <IncludePath>C:\Users\Stewart\Documents\code\rosetta\c\mugwump_2d\3rd_party\raygui\src;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
@@ -85,6 +87,7 @@
     <IntDir>obj\x64\Release\</IntDir>
     <TargetName>Mugwump_2d</TargetName>
     <TargetExt>.exe</TargetExt>
+    <IncludePath>C:\Users\Stewart\Documents\code\rosetta\c\mugwump_2d\3rd_party\raygui\src;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release.DLL|x64'">
     <LinkIncremental>false</LinkIncremental>
@@ -92,6 +95,7 @@
     <IntDir>obj\x64\Release.DLL\</IntDir>
     <TargetName>Mugwump_2d</TargetName>
     <TargetExt>.exe</TargetExt>
+    <IncludePath>C:\Users\Stewart\Documents\code\rosetta\c\mugwump_2d\3rd_party\raygui\src;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -173,6 +177,7 @@
     <ClCompile Include="Grid.c" />
     <ClCompile Include="main.c" />
     <ClCompile Include="Mugwump.c" />
+    <ClCompile Include="Status.c" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\3rd_party\build\raylib.vcxproj">
@@ -183,6 +188,7 @@
     <ClInclude Include="Grid.h" />
     <ClInclude Include="Mugwump.h" />
     <ClInclude Include="Settings.h" />
+    <ClInclude Include="Status.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
