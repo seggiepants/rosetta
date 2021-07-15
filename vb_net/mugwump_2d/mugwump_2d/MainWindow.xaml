@@ -1,0 +1,35 @@
+﻿<Window x:Class="MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="800">
+    <Grid x:Name="gridLayout" Margin="-3,0,0,0">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition x:Name="Console" Width="Auto"></ColumnDefinition>
+            <ColumnDefinition x:Name="Grid" Width="*"></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition x:Name="TitleBar" Height="Auto"></RowDefinition>
+            <RowDefinition x:Name="Data" Height="*"></RowDefinition>
+        </Grid.RowDefinitions>
+        <Label x:Name="lblTitle" Grid.ColumnSpan="2" FontWeight="Bold" FontFamily="Arial Black" FontSize="18" HorizontalAlignment="Center">Mugwump 2D</Label>
+
+
+        <Grid x:Name="info" Grid.Row="1"  Margin="16,0,16,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"></ColumnDefinition>
+                <ColumnDefinition Width="Auto"></ColumnDefinition>
+                <ColumnDefinition Width="*"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            <TextBlock x:Name="tbNewGame" Grid.Row="0" Grid.ColumnSpan="3">Find all the Mugwumps to win! <LineBreak/>
+            Select a square to scan for a Mugwump. <LineBreak/>
+            Use the arrow keys to move. <LineBreak/>
+            Space bar will select a square. <LineBreak/>
+            You can also use the mouse. <LineBreak/>
+            Press the Escape key to quite the game.</TextBlock>
+        </Grid>
+        <Canvas x:Name="cnvGrid" Grid.Row="1" Grid.Column="1" SizeChanged="CnvGrid_SizeChanged" KeyUp="CnvGrid_KeyUp" Focusable="True" MouseLeftButtonUp="CnvGrid_MouseLeftButtonUp" />
+    </Grid>
+</Window>
