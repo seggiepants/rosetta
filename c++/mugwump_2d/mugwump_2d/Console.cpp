@@ -54,7 +54,7 @@ void Console::Draw(olc::PixelGameEngine* app, std::vector<olc::vi2d>* guesses, i
 				int y = guessIDX >= 0 ? ((*guesses)[guessIDX].y) : 0;
 				float dx = (float)(x - (*mugwump)->getX());
 				float dy = (float)(y - (*mugwump)->getY());
-				float dist = std::sqrtf(dx * dx + dy * dy);
+				float dist = std::sqrt(dx * dx + dy * dy);
 				buffer.str("");
 				buffer << "  is " << std::fixed << std::setprecision(2) << dist << " units away.";
 			}
