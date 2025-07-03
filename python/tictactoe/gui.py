@@ -4,6 +4,7 @@ from tkinter import BooleanVar, StringVar, ttk, messagebox, font as tkFont
 from board import *
 from enum import Enum
 import tictactoe
+import settings
 
 class PlayerType(Enum):
     Human = 0
@@ -16,12 +17,58 @@ class DifficultyLevel(Enum):
 
 class Gui:
     def __init__(self):
+        self.load_settings()
         self.root = self.init_gui()
         self.board = Board()
         self.board.new_game()
         self.is_playing = False
-        self.playerType = {'X': PlayerType.Human, 'O': PlayerType.Computer}
-        self.currentPlayer = 'X'
+        
+        self.play_game()
+
+    def __del__(self):
+        self.save_settings()
+
+    def load_settings(self):
+        (x, o, difficulty) = settings.load_settings()
+        if x == 'Computer':
+            x_player = PlayerType.Computer
+        else: 
+            x_player = PlayerType.Human
+
+        if o == 'Computer':
+            o_player = PlayerType.Computer
+        else:
+            o_player = PlayerType.Human
+
+        if difficulty == 'Medium':
+            self.difficulty = DifficultyLevel.Medium
+        elif difficulty == 'Hard':
+            self.difficulty = DifficultyLevel.Hard
+        else:
+            self.difficulty = DifficultyLevel.Easy
+
+        self.playerType = {'X': x_player, 'O': o_player}
+        
+    
+    def save_settings(self):
+        if self.playerType['X'] == PlayerType.Computer:
+            x_player = 'Computer'
+        else:
+            x_player = 'Human'
+        
+        if self.playerType['O'] == PlayerType.Computer:
+            o_player = 'Computer'
+        else:
+            o_player = 'Human'
+
+        if self.difficulty == DifficultyLevel.Medium:
+            difficulty = 'Medium'
+        elif self.difficulty  == DifficultyLevel.Hard:
+            difficulty = 'Hard'
+        else:
+            difficulty = 'Easy'
+        
+        settings.save_settings(x_player, o_player, difficulty)
 
     def cell_click(self, col, row, args):
         if self.is_playing and self.playerType[self.player] == PlayerType.Human:
@@ -90,7 +137,6 @@ class Gui:
         root.resizable(False, False)
         
         self.labels = [[StringVar() for i in range(3)] for j in range(3)]
-        self.difficulty = DifficultyLevel.Easy
 
         # Menu
         menu = tk.Menu(root)
@@ -101,9 +147,9 @@ class Gui:
         menuFile.add_command(label = 'Exit', command=root.destroy)
         menu.add_cascade(label='File', menu=menuFile)
 
-        self.easy = BooleanVar(master=root, value=True)
-        self.medium = BooleanVar(master=root, value=False)
-        self.hard = BooleanVar(master=root, value=False)
+        self.easy = BooleanVar(master=root, value=self.difficulty == DifficultyLevel.Easy)
+        self.medium = BooleanVar(master=root, value=self.difficulty == DifficultyLevel.Medium)
+        self.hard = BooleanVar(master=root, value=self.difficulty == DifficultyLevel.Hard)
 
         menuDifficulty = tk.Menu(menu, tearoff=False)
         menuDifficulty.add_checkbutton(label='Easy', variable=self.easy, command=lambda : self.set_difficulty(DifficultyLevel.Easy))

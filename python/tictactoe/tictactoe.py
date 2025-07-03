@@ -91,6 +91,7 @@ def gui_main():
     ui = gui.Gui()
     root = ui.root
     root.mainloop()
+    ui.save_settings()
 
 if __name__ == '__main__':
     # console_main()
